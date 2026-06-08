@@ -1,0 +1,46 @@
+[
+  {
+    "pdf": "Briefing: YBBN - RJTT (created Apr 19 07:02:56Z).pdf",
+    "departure_icao": "YBBN",
+    "arrival_icao": "RJTT",
+    "planned_dept_time": "2026-04-19T07:15:00+00:00",
+    "planned_arr_time": "2026-04-19T15:09:00+00:00",
+    "route": "BIXAD2 BIXAD Q67 GUDSO Q24 KELPI B220 DOTOD/N0493F470 B220 PY H401 NZ B586 PIKOK/M089F470 B586 OMLET/N0496F470 B586 XAC XACN",
+    "cruise_level": "FL470",
+    "alt_icao": null,
+    "source_app": "foreflight"
+  },
+  {
+    "pdf": "Briefing: YSSY - YBBN (created Apr 14 01:10:42Z).pdf",
+    "departure_icao": "YSSY",
+    "arrival_icao": "YBBN",
+    "planned_dept_time": "2026-04-25T09:10:00+00:00",
+    "planned_arr_time": "2026-04-25T10:06:00+00:00",
+    "route": "DCT",
+    "cruise_level": "FL450",
+    "alt_icao": "YBSU",
+    "source_app": "foreflight"
+  },
+  {
+    "pdf": "Briefing: YSSY - YPPH (created Apr 14 01:22:14Z).pdf",
+    "departure_icao": "YSSY",
+    "arrival_icao": "YPPH",
+    "planned_dept_time": "2026-04-15T11:35:00+00:00",
+    "planned_arr_time": "2026-04-15T15:42:00+00:00",
+    "route": "TESAT A576 KADOM H44 BORLI Q32 NODEV Q10 MALUP Q158 PH",
+    "cruise_level": "FL430",
+    "alt_icao": "YBLN",
+    "source_app": "foreflight"
+  },
+  {
+    "pdf": "Specific Pre-Flight Information Bulletin.pdf",
+    "departure_icao": "YSSY",
+    "arrival_icao": "YPDN",
+    "planned_dept_time": null,
+    "planned_arr_time": null,
+    "route": "YSSY TESAT YSRI MUDGI KABIX POTUM BAZZA OPAXA IVRAD DODRO NITUN MIGAX OPEKO YPTN VEGPU YPDN",
+    "cruise_level": "FL430",
+    "alt_icao": "YPTN",
+    "source_app": "naips"
+  }
+]

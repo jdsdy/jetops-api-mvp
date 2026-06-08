@@ -1,4 +1,4 @@
-from unittest.mock import MagicMock
+from unittest.mock import MagicMock, patch
 from uuid import UUID, uuid4
 
 import pytest
@@ -55,7 +55,10 @@ def client(
     app.dependency_overrides[get_authenticated_user] = lambda: mock_user
     app.dependency_overrides[get_job_service] = lambda: mock_job_service
 
-    with TestClient(app) as test_client:
+    with (
+        patch("app.api.v1.endpoints.jobs.run_extraction"),
+        TestClient(app) as test_client,
+    ):
         yield test_client
 
     app.dependency_overrides.clear()

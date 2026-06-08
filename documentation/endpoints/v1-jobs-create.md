@@ -38,9 +38,16 @@ Creates a new NOTAM analysis job for a flight plan PDF that already exists in Su
 2. Validates `storage_path` against the UUIDs in the request body.
 3. Inserts an `analysis_jobs` row with `status: "processing_extraction"` and `triggered_by` set to the authenticated user.
 4. Downloads the PDF from the `flight_plan_pdfs` bucket to verify it exists and is accessible.
-5. On success, returns the job ID. Status updates after this point are delivered via Supabase Realtime (not in this response).
+5. Returns the job ID immediately (`201`).
+6. Runs flight data extraction in a background task:
+   - Parses the PDF (ForeFlight or NAIPS)
+   - Writes extracted fields to `flights` and `flight_plans`
+   - On success, sets `analysis_jobs.status` to `awaiting_confirmation`
+   - On failure, sets `status` to `failed` with `error_message`
 
-If any step fails **after** the job row is created, the job is updated to:
+Status updates after the HTTP response are delivered via Supabase Realtime (not in the create response).
+
+If PDF verification fails **before** the response is returned, or if background extraction fails, the job is updated to:
 
 - `status`: `"failed"`
 - `error_message`: message from the caught error

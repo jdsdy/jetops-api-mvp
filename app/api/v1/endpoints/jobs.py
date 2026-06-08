@@ -1,6 +1,6 @@
 from typing import Annotated
 
-from fastapi import APIRouter, Depends, HTTPException, status
+from fastapi import APIRouter, BackgroundTasks, Depends, HTTPException, status
 
 from app.api.dependencies import (
     AuthenticatedUserDep,
@@ -10,6 +10,7 @@ from app.api.dependencies import (
 from app.core.supabase import get_supabase_client
 from app.repositories.job_repository import JobRepository
 from app.schemas.job import CreateJobRequest, CreateJobResponse
+from app.services.extraction_task import run_extraction
 from app.services.job_service import JobService
 
 router = APIRouter(
@@ -32,6 +33,7 @@ def create_job(
     request: CreateJobRequest,
     user: AuthenticatedUserDep,
     job_service: JobServiceDep,
+    background_tasks: BackgroundTasks,
 ) -> CreateJobResponse:
     try:
         job_id = job_service.create_job(request, user)
@@ -40,5 +42,12 @@ def create_job(
             status_code=status.HTTP_400_BAD_REQUEST,
             detail=str(error),
         ) from error
+
+    background_tasks.add_task(
+        run_extraction,
+        job_id,
+        request.flight_plan_id,
+        request.storage_path,
+    )
 
     return CreateJobResponse(id=job_id)

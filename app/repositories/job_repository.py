@@ -4,6 +4,7 @@ from uuid import UUID
 from supabase import Client
 
 FLIGHT_PLAN_PDFS_BUCKET = "flight_plan_pdfs"
+AWAITING_CONFIRMATION = "awaiting_confirmation"
 
 
 class JobRepository:
@@ -36,9 +37,19 @@ class JobRepository:
             }
         ).eq("id", str(job_id)).execute()
 
-    def verify_flight_plan_pdf(self, storage_path: str) -> None:
+    def update_status(self, job_id: UUID, status: str) -> None:
+        self._client.table("analysis_jobs").update({"status": status}).eq(
+            "id",
+            str(job_id),
+        ).execute()
+
+    def download_flight_plan_pdf(self, storage_path: str) -> bytes:
         data = self._client.storage.from_(FLIGHT_PLAN_PDFS_BUCKET).download(
             storage_path
         )
         if not data:
             raise FileNotFoundError("Flight plan PDF not found")
+        return data
+
+    def verify_flight_plan_pdf(self, storage_path: str) -> None:
+        self.download_flight_plan_pdf(storage_path)

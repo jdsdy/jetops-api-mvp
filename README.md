@@ -19,6 +19,10 @@ Endpoint reference lives in [`documentation/endpoints/`](documentation/endpoints
 
 - [POST /v1/jobs — Create analysis job](documentation/endpoints/v1-jobs-create.md)
 
+Service docs:
+
+- [Flight data extraction](documentation/services/flight-extraction.md)
+
 ## Tests
 
 ```bash
