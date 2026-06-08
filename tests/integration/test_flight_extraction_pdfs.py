@@ -41,5 +41,5 @@ def test_parse_flight_data_from_txt(case: dict) -> None:
 
 @pytest.mark.parametrize("case", load_expected_cases(), ids=lambda c: c["pdf"])
 def test_parse_flight_data_from_pdf(case: dict) -> None:
-    text = extract_pdf_text(EXAMPLE_PLANS_DIR / case["pdf"])
-    assert_flight_data_matches_case(parse_flight_data(text), case)
+    result = extract_pdf_text(EXAMPLE_PLANS_DIR / case["pdf"])
+    assert_flight_data_matches_case(parse_flight_data(result.text), case)

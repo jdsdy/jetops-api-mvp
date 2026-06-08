@@ -27,7 +27,12 @@ Multi-line `e` (and `d`) values join source lines with a ` {\n} ` marker so the 
 
 - **Page breaks injected mid-NOTAM** are stripped (`NOTAMs:Page n of m`, NAIPS `Page n of m` and the AirServices URL footer).
 - **ForeFlight condensed (US-style) NOTAMs** (e.g. `HNL 04/227 ... 2604180306-2604302359EST`) share a single-word section title (`NAVIGATION`, `AIRSPACE`, `ROUTE`) and carry their dates/altitudes inline.
-- **Structural separators** — `FIR ____`, `Departure`/`Destination`, and `[descriptor]` lines — are skipped and terminate the preceding NOTAM's text.
+- **Structural separators** — terminate the preceding NOTAM's text and are not parsed as field content:
+  - `FIR ____`, `Departure`/`Destination`, and `[descriptor]` lines
+  - `Alternate#...` lines (e.g. `Alternate1 YBLN-Busselton`)
+  - Enroute section markers ending in `NOTAMs` (e.g. `USEnrouteNavigationNOTAMs`)
+  - Single-word alphabetic section headers immediately before a condensed US-style NOTAM (e.g. `NAVIGATION` before `GUM 04/059 ...`)
+  - Short alphabetic E-field continuations (e.g. `AVBL`) are kept when they are not followed by a condensed NOTAM
 - **Brackets inside `e`** (e.g. `(CHUO-KU IN TOKYO)`) are not mistaken for field tags; tags are only honoured in canonical `Q A B C D E F G` order.
 - **NAIPS abbreviated dates** (`MM DDHHmm`) are expanded to `YYMMDDHHmm` using the two-digit year from the document header line.
 - Some source `e` values legitimately cut off mid-word (e.g. `... (ERSA`); these are preserved verbatim.
@@ -36,10 +41,7 @@ Multi-line `e` (and `d`) values join source lines with a ` {\n} ` marker so the 
 
 | Module | Role |
 |---|---|
-| [`app/services/notam_utils.py`](../../app/services/notam_utils.py) | Page-break stripping, `{\n}` joining, NAIPS date helpers |
-| [`app/services/foreflight_notam_parser.py`](../../app/services/foreflight_notam_parser.py) | ForeFlight standard + condensed NOTAM parsing |
-| [`app/services/naips_notam_parser.py`](../../app/services/naips_notam_parser.py) | NAIPS NOTAM parsing |
-| [`app/services/notam_parser.py`](../../app/services/notam_parser.py) | Orchestrator (`extract_notams`) |
+| [`app/services/notam_parser.py`](../../app/services/notam_parser.py) | Shared helpers, ForeFlight + NAIPS NOTAM parsers, `extract_notams` |
 | [`app/repositories/notam_repository.py`](../../app/repositories/notam_repository.py) | Bulk insert into `raw_notams` |
 
 ## Tests
@@ -49,8 +51,6 @@ NOTAM fixtures are a hand-curated **subset**: tests assert every fixture NOTAM i
 Fixtures: [`tests/fixtures/notam_expected.json`](../../tests/fixtures/notam_expected.json)
 
 ```bash
-pytest tests/unit/test_notam_utils.py \
-       tests/unit/test_foreflight_notam_parser.py \
-       tests/unit/test_naips_notam_parser.py \
+pytest tests/unit/test_notam_parser.py \
        tests/integration/test_notam_extraction_pdfs.py -v
 ```

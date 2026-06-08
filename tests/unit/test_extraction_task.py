@@ -8,6 +8,7 @@ from app.repositories.notam_repository import NotamRepository
 from app.schemas.flight import FlightData
 from app.schemas.notam import RawNotam
 from app.services.extraction_task import run_extraction
+from app.services.pdf_extractor import PdfExtractionResult
 from tests.conftest import PLAN_ID, STORAGE_PATH
 
 
@@ -32,6 +33,8 @@ def test_run_extraction_success_persists_flight_notams_and_status() -> None:
     )
     notams = [RawNotam(notam_id="C0481/26 NOTAMN")]
 
+    mock_stage_repo = MagicMock()
+
     with (
         patch("app.services.extraction_task.get_supabase_client"),
         patch("app.services.extraction_task.JobRepository", return_value=mock_job_repo),
@@ -43,7 +46,14 @@ def test_run_extraction_success_persists_flight_notams_and_status() -> None:
             "app.services.extraction_task.NotamRepository",
             return_value=mock_notam_repo,
         ),
-        patch("app.services.extraction_task.extract_pdf_text", return_value="text"),
+        patch(
+            "app.services.pipeline_stage.PipelineStageLogRepository",
+            return_value=mock_stage_repo,
+        ),
+        patch(
+            "app.services.extraction_task.extract_pdf_text",
+            return_value=PdfExtractionResult(text="text", page_count=5),
+        ),
         patch(
             "app.services.extraction_task.parse_flight_data",
             return_value=flight_data,
@@ -55,6 +65,7 @@ def test_run_extraction_success_persists_flight_notams_and_status() -> None:
     ):
         run_extraction(job_id, PLAN_ID, STORAGE_PATH)
 
+    assert mock_stage_repo.insert_log.call_count == 3
     mock_flight_repo.update_from_extraction.assert_called_once_with(
         flight_id,
         PLAN_ID,
@@ -75,6 +86,8 @@ def test_run_extraction_failure_marks_job_failed() -> None:
     mock_notam_repo = MagicMock(spec=NotamRepository)
     mock_job_repo.download_flight_plan_pdf.side_effect = RuntimeError("parse failed")
 
+    mock_stage_repo = MagicMock()
+
     with (
         patch("app.services.extraction_task.get_supabase_client"),
         patch("app.services.extraction_task.JobRepository", return_value=mock_job_repo),
@@ -86,9 +99,14 @@ def test_run_extraction_failure_marks_job_failed() -> None:
             "app.services.extraction_task.NotamRepository",
             return_value=mock_notam_repo,
         ),
+        patch(
+            "app.services.pipeline_stage.PipelineStageLogRepository",
+            return_value=mock_stage_repo,
+        ),
     ):
         run_extraction(job_id, PLAN_ID, STORAGE_PATH)
 
     mock_job_repo.mark_failed.assert_called_once_with(job_id, "parse failed")
     mock_job_repo.update_status.assert_not_called()
     mock_notam_repo.insert_notams.assert_not_called()
+    mock_stage_repo.insert_log.assert_not_called()

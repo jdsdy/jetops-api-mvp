@@ -1,7 +1,14 @@
+from dataclasses import dataclass
 from io import BytesIO
 from pathlib import Path
 
 import pdfplumber
+
+
+@dataclass
+class PdfExtractionResult:
+    text: str
+    page_count: int
 
 
 def find_column_boundary(page: pdfplumber.page.Page) -> float:
@@ -54,14 +61,12 @@ def extract_page_text(page: pdfplumber.page.Page) -> str:
     return page.extract_text() or ""
 
 
-def extract_pdf_text(source: str | bytes | Path) -> str:
+def extract_pdf_text(source: str | bytes | Path) -> PdfExtractionResult:
     if isinstance(source, bytes):
         pdf_file: str | BytesIO = BytesIO(source)
     else:
         pdf_file = str(source)
 
-    pages: list[str] = []
     with pdfplumber.open(pdf_file) as pdf:
-        for page in pdf.pages:
-            pages.append(extract_page_text(page))
-    return "\n\n".join(pages)
+        pages = [extract_page_text(page) for page in pdf.pages]
+    return PdfExtractionResult(text="\n\n".join(pages), page_count=len(pages))

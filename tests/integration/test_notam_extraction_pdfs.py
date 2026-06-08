@@ -42,5 +42,5 @@ def test_extract_notams_from_txt(case: dict) -> None:
 
 @pytest.mark.parametrize("case", load_expected_cases(), ids=lambda c: c["pdf"])
 def test_extract_notams_from_pdf(case: dict) -> None:
-    text = extract_pdf_text(EXAMPLE_PLANS_DIR / case["pdf"])
-    assert_contains_expected(extract_notams(text), case["notams"])
+    result = extract_pdf_text(EXAMPLE_PLANS_DIR / case["pdf"])
+    assert_contains_expected(extract_notams(result.text), case["notams"])
