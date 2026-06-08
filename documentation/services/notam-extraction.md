@@ -1,0 +1,56 @@
+# NOTAM extraction
+
+Rule-based extraction of individual NOTAMs from ForeFlight and NAIPS briefing PDFs. Each NOTAM is parsed into the ICAO field structure and written to `raw_notams`.
+
+See also: [Flight data extraction](flight-extraction.md) and [POST /v1/jobs](../endpoints/v1-jobs-create.md) — NOTAM extraction runs in the same background task, after flight data is persisted.
+
+## Extracted fields
+
+Each NOTAM maps to one `raw_notams` row. Fields that are absent are stored as `null`.
+
+| Field | Meaning | ForeFlight | NAIPS |
+|---|---|---|---|
+| `notam_id` | Full identifier line (incl. `NOTAMR`/`REPLACE` references) | ID line | ID line |
+| `title` | NOTAM heading | line above the ID (or condensed section word) | always null |
+| `q` | Qualifier line | `Q)` tag | always null |
+| `a` | Location indicator | `A)` tag | group header ICAO (last bracket) |
+| `b` | Effective from (UTC) | `B)` tag | `FROM MM DDHHmm`, year from header |
+| `c` | Effective to (UTC) | `C)` tag | `TO MM DDHHmm` / `PERM` |
+| `d` | Schedule | `D)` tag | `DAILY...` / `HJ` / `HN` line |
+| `e` | NOTAM text | `E)` tag (multi-line) | body lines (multi-line) |
+| `f` | Lower limit | `F)` tag | `SFC TO ...` lower value |
+| `g` | Upper limit | `G)` tag | `... TO <limit>` upper value |
+
+Multi-line `e` (and `d`) values join source lines with a ` {\n} ` marker so the original line structure can be re-rendered to the user.
+
+## Format quirks handled
+
+- **Page breaks injected mid-NOTAM** are stripped (`NOTAMs:Page n of m`, NAIPS `Page n of m` and the AirServices URL footer).
+- **ForeFlight condensed (US-style) NOTAMs** (e.g. `HNL 04/227 ... 2604180306-2604302359EST`) share a single-word section title (`NAVIGATION`, `AIRSPACE`, `ROUTE`) and carry their dates/altitudes inline.
+- **Structural separators** — `FIR ____`, `Departure`/`Destination`, and `[descriptor]` lines — are skipped and terminate the preceding NOTAM's text.
+- **Brackets inside `e`** (e.g. `(CHUO-KU IN TOKYO)`) are not mistaken for field tags; tags are only honoured in canonical `Q A B C D E F G` order.
+- **NAIPS abbreviated dates** (`MM DDHHmm`) are expanded to `YYMMDDHHmm` using the two-digit year from the document header line.
+- Some source `e` values legitimately cut off mid-word (e.g. `... (ERSA`); these are preserved verbatim.
+
+## Module layout
+
+| Module | Role |
+|---|---|
+| [`app/services/notam_utils.py`](../../app/services/notam_utils.py) | Page-break stripping, `{\n}` joining, NAIPS date helpers |
+| [`app/services/foreflight_notam_parser.py`](../../app/services/foreflight_notam_parser.py) | ForeFlight standard + condensed NOTAM parsing |
+| [`app/services/naips_notam_parser.py`](../../app/services/naips_notam_parser.py) | NAIPS NOTAM parsing |
+| [`app/services/notam_parser.py`](../../app/services/notam_parser.py) | Orchestrator (`extract_notams`) |
+| [`app/repositories/notam_repository.py`](../../app/repositories/notam_repository.py) | Bulk insert into `raw_notams` |
+
+## Tests
+
+NOTAM fixtures are a hand-curated **subset**: tests assert every fixture NOTAM is present in the parser output (matched by `notam_id`), with `{\n}`/whitespace normalized for comparison.
+
+Fixtures: [`tests/fixtures/notam_expected.json`](../../tests/fixtures/notam_expected.json)
+
+```bash
+pytest tests/unit/test_notam_utils.py \
+       tests/unit/test_foreflight_notam_parser.py \
+       tests/unit/test_naips_notam_parser.py \
+       tests/integration/test_notam_extraction_pdfs.py -v
+```

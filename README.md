@@ -22,6 +22,7 @@ Endpoint reference lives in [`documentation/endpoints/`](documentation/endpoints
 Service docs:
 
 - [Flight data extraction](documentation/services/flight-extraction.md)
+- [NOTAM extraction](documentation/services/notam-extraction.md)
 
 ## Tests
 
