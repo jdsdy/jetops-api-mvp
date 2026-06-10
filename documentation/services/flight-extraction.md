@@ -48,6 +48,8 @@ Stages that complete before an error are logged; stages not reached are omitted.
 | Outcome | `analysis_jobs.status` |
 |---|---|
 | Extraction + DB write succeed | `awaiting_confirmation` |
+| Analysis start (`POST /v1/jobs/analysis`, sync) | `processing_analysis` |
+| NOTAM analysis completes | `finished` |
 | Any extraction/persistence error | `failed` (+ `error_message`) |
 
 ## Tests

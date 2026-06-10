@@ -8,7 +8,7 @@ from app.services.flight_parser import detect_plan_format
 # ---------------------------------------------------------------------------
 
 LINE_MARKER = "{\\n}"
-E_JOIN = f" {LINE_MARKER} "
+E_JOIN = f"{LINE_MARKER} "
 
 _PAGE_BREAK_PATTERNS = (
     re.compile(r"^NOTAMs.*\d+\s*of\s*\d+\s*$", re.IGNORECASE),
@@ -342,7 +342,6 @@ _NAIPS_FG = re.compile(rf"^({_FF_ALTITUDE})\s+TO\s+({_FF_ALTITUDE})$")
 _NAIPS_BC = re.compile(
     r"^FROM\s+(\d{2}\s+\d{6})\s+TO\s+(PERM|\d{2}\s+\d{6})(\s+EST)?$"
 )
-_NAIPS_D = re.compile(r"^(DAILY\b.*|HJ|HN|H24|(?:MON|TUE|WED|THU|FRI|SAT|SUN)[A-Z0-9 -]*)$")
 
 
 def _parse_naips_notams(text: str) -> list[RawNotam]:
@@ -395,7 +394,9 @@ def _collect_naips_notam(
 ) -> tuple[RawNotam, int]:
     notam_id = lines[start].strip()
     e_lines: list[str] = []
-    b = c = d = f = g = None
+    d_lines: list[str] = []
+    b = c = f = g = None
+    seen_bc = False
 
     j = start + 1
     n = len(lines)
@@ -408,6 +409,13 @@ def _collect_naips_notam(
         if _NAIPS_ID.match(stripped):
             break
 
+        if seen_bc:
+            if _is_naips_header(stripped):
+                break
+            d_lines.append(stripped)
+            j += 1
+            continue
+
         fg_match = _NAIPS_FG.match(stripped)
         if fg_match:
             f, g = fg_match.group(1), fg_match.group(2)
@@ -417,11 +425,9 @@ def _collect_naips_notam(
         bc_match = _NAIPS_BC.match(stripped)
         if bc_match:
             b, c = _parse_naips_bc(bc_match, year)
+            seen_bc = True
             j += 1
-            if j < n and _NAIPS_D.match(lines[j].strip()):
-                d = lines[j].strip()
-                j += 1
-            break
+            continue
 
         e_lines.append(stripped)
         j += 1
@@ -432,8 +438,8 @@ def _collect_naips_notam(
             a=current_a,
             b=b,
             c=c,
-            d=d,
-            e=E_JOIN.join(e_lines) or None,
+            d=_join_marked(d_lines),
+            e=_join_marked(e_lines),
             f=f,
             g=g,
         ),

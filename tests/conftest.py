@@ -25,6 +25,7 @@ def test_settings() -> Settings:
         API_KEY=TEST_API_KEY,
         SUPABASE_URL="https://example.supabase.co",
         SUPABASE_SECRET_KEY="test-secret-key",
+        ANTHROPIC_API_KEY="test-anthropic-key",
     )
 
 

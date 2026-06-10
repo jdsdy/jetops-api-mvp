@@ -12,3 +12,10 @@ class CreateJobRequest(BaseModel):
 
 class CreateJobResponse(BaseModel):
     id: UUID
+
+
+class BeginAnalysisRequest(BaseModel):
+    organisation_id: UUID
+    flight_id: UUID
+    flight_plan_id: UUID
+    job_id: UUID

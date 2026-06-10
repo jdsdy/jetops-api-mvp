@@ -45,7 +45,7 @@ def test_strip_page_breaks_removes_mid_notam_footers() -> None:
 
 def test_e_join_marker() -> None:
     assert E_JOIN.join(["TWY B2 CLSD", "TWY F2 CLSD"]) == (
-        "TWY B2 CLSD {\\n} TWY F2 CLSD"
+        "TWY B2 CLSD{\\n} TWY F2 CLSD"
     )
 
 
@@ -83,7 +83,7 @@ def test_standard_notam_fields_and_title() -> None:
     assert first.a == "YBBN"
     assert first.b == "2604191200"
     assert first.c == "2604191900"
-    assert first.e == "TWY B2 CLSD {\\n} TWY F2 BTN TWY B AND G1 CLSD"
+    assert first.e == "TWY B2 CLSD{\\n} TWY F2 BTN TWY B AND G1 CLSD"
     assert notams["C0478/26 NOTAMN"].d == "HJ"
 
 
@@ -99,7 +99,7 @@ def test_inline_altitude_fields_not_split_on_brackets_in_e() -> None:
     )
     notam = _parse_foreflight(body)["J0880/26 NOTAMN"]
     assert notam.a == "RJTT"
-    assert notam.e == "OBST LGT U/S {\\n} (CHUO-KU IN TOKYO)"
+    assert notam.e == "OBST LGT U/S{\\n} (CHUO-KU IN TOKYO)"
     assert notam.f == "SFC"
     assert notam.g == "371FT AMSL"
 
@@ -199,7 +199,7 @@ def test_section_header_sets_a_and_year_expansion() -> None:
     assert notam.b == "2602180155"
     assert notam.c == "PERM"
     assert notam.e == (
-        "DESIGNATED AIRSPACE HANDBOOK (DAH) AND AIP CHARTS EFFECTIVE 27 "
+        "DESIGNATED AIRSPACE HANDBOOK (DAH) AND AIP CHARTS EFFECTIVE 27"
         "{\\n} NOVEMBER 2025 AIRAC AMD"
     )
 
@@ -234,3 +234,72 @@ def test_replace_id_and_est_expiry() -> None:
     assert notam.a == "YSSY"
     assert notam.c == "2606082030 EST"
     assert notam.d == "DAILY 0830-2030"
+
+
+def test_d_field_collects_all_lines_after_bc_until_next_id() -> None:
+    body = (
+        "RICHMOND (NSW) (YSRI)\n"
+        "F1717/26 REPLACE F784/26\n"
+        "AIP DEP AND APCH (DAP) AMD\n"
+        "FROM 05 070227 TO 06 301300 EST\n"
+        "MON-SAT 1945-1300\n"
+        "F1583/26\n"
+        "TACAN 'RIC' 110.7/44X PILOT MNT\n"
+        "FROM 04 260011 TO 06 250000 EST\n"
+    )
+    notam = _parse_naips(body)["F1717/26 REPLACE F784/26"]
+    assert notam.d == "MON-SAT 1945-1300"
+    assert notam.e == "AIP DEP AND APCH (DAP) AMD"
+
+
+def test_d_field_supports_free_text_and_multiline_schedules() -> None:
+    body = (
+        "TINDAL (YPTN)\n"
+        "L459/26\n"
+        "ATS AND 'RIX' AIRSPACE SUBJ TO RESTRICTIONS\n"
+        "SUBJ TO SHORT NOTICE ACTIVATION/DEACTIVATION DUE OPERATIONAL\n"
+        "RESTRICTIONS. FOR KNOWN MILITARY ARRIVALS AND DEPARTURES ONLY.\n"
+        "FROM 05 092200 TO 08 020830\n"
+        "SAT, SUN, PUBLIC HOLIDAY 2200-0830\n"
+        "J2544/26\n"
+        "RWY THR DATA AMD\n"
+        "FROM 06 020238 TO PERM\n"
+    )
+    notam = _parse_naips(body)["L459/26"]
+    assert notam.d == "SAT, SUN, PUBLIC HOLIDAY 2200-0830"
+    assert notam.e == (
+        "ATS AND 'RIX' AIRSPACE SUBJ TO RESTRICTIONS"
+        "{\\n} SUBJ TO SHORT NOTICE ACTIVATION/DEACTIVATION DUE OPERATIONAL"
+        "{\\n} RESTRICTIONS. FOR KNOWN MILITARY ARRIVALS AND DEPARTURES ONLY."
+    )
+
+
+def test_d_field_stops_at_group_header() -> None:
+    body = (
+        "AUSTRALIA GEN (YBBB/YMMM)\n"
+        "G5/26\n"
+        "DESIGNATED AIRSPACE HANDBOOK (DAH) AND AIP CHARTS EFFECTIVE 27\n"
+        "FROM 02 180155 TO PERM\n"
+        "SYDNEY (YSSY)\n"
+        "H4506/26 REPLACE H4378/26\n"
+        "OBSTACLE CRANES\n"
+        "FROM 06 040456 TO 06 300000 EST\n"
+    )
+    notam = _parse_naips(body)["G5/26"]
+    assert notam.d is None
+    assert _parse_naips(body)["H4506/26 REPLACE H4378/26"].a == "YSSY"
+
+
+def test_d_field_null_when_bc_immediately_followed_by_next_id() -> None:
+    body = (
+        "SYDNEY (YSSY)\n"
+        "H3992/26\n"
+        "RWY 34L NOT TO STD\n"
+        "FROM 05 180442 TO 06 300000 EST\n"
+        "H3991/26\n"
+        "RWY 34R NOT TO STD\n"
+        "FROM 05 180440 TO 06 300000 EST\n"
+    )
+    notam = _parse_naips(body)["H3992/26"]
+    assert notam.d is None
+    assert notam.e == "RWY 34L NOT TO STD"

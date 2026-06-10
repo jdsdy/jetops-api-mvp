@@ -12,6 +12,14 @@ class Settings(BaseSettings):
     API_KEY: str
     SUPABASE_URL: str
     SUPABASE_SECRET_KEY: str
+    ANTHROPIC_API_KEY: str
+
+    NOTAM_ANALYSIS_MODEL: str = "claude-sonnet-4-6"
+    NOTAM_ANALYSIS_MAX_TOKENS: int = 12000
+    NOTAM_ANALYSIS_BATCH_SIZE: int = 10
+    NOTAM_ANALYSIS_MAX_CONCURRENCY: int = 4
+    NOTAM_ANALYSIS_INPUT_COST_PER_M: float = 3.0
+    NOTAM_ANALYSIS_OUTPUT_COST_PER_M: float = 15.0
 
 
 @lru_cache

@@ -1,9 +1,15 @@
 from datetime import UTC, datetime
 
+import pytest
+
+from app.schemas.analysis_context import AircraftContext, AirfieldContext, FlightContext
 from app.schemas.flight import FlightData
 from app.schemas.notam import RawNotam
+from app.schemas.notam_analysis import BatchAnalysisResult, BatchCallStats
 from app.schemas.pipeline_stage import (
+    build_context_object_metadata,
     build_flight_parse_metadata,
+    build_notam_analysis_metadata,
     build_notam_parse_metadata,
 )
 
@@ -83,3 +89,54 @@ def test_build_notam_parse_metadata_not_multiformat_for_naips() -> None:
     metadata = build_notam_parse_metadata(notams, "naips")
 
     assert metadata.multiformat_notams is False
+
+
+def test_build_context_object_metadata_flags_full_data() -> None:
+    flight = FlightContext(
+        departure_airfield=AirfieldContext(
+            icao="YSSY",
+            iso_country="AU",
+            length_ft=1299.0,
+        ),
+        arrival_airfield=AirfieldContext(icao="YPPH"),
+        alternate_airfield_icao=None,
+        planned_dept_time=None,
+        planned_arr_time=None,
+        route=None,
+        cruise_level=None,
+        aircraft=AircraftContext(icao_wtc="M"),
+    )
+
+    metadata = build_context_object_metadata(flight)
+
+    assert metadata.departure_airfield_full_data_found is True
+    assert metadata.arrival_airfield_full_data_found is False
+    assert metadata.aircraft_full_data_found is True
+
+
+def test_build_notam_analysis_metadata_computes_cost() -> None:
+    batch_result = BatchAnalysisResult(
+        results=[],
+        batch_stats=[
+            BatchCallStats(
+                duration_ms=100,
+                input_tokens=1_000_000,
+                output_tokens=1_000_000,
+                batch_size=20,
+            )
+        ],
+        model="claude-sonnet-4-6",
+        token_limit_hit=False,
+    )
+
+    metadata = build_notam_analysis_metadata(
+        batch_result,
+        input_cost_per_m=3.0,
+        output_cost_per_m=15.0,
+    )
+
+    assert metadata.batches == 1
+    assert metadata.input_tokens == 1_000_000
+    assert metadata.output_tokens == 1_000_000
+    assert metadata.est_cost == pytest.approx(18.0)
+    assert metadata.slowest_batch_ms == 100

@@ -69,3 +69,95 @@ ICAO Weight class: ICAO_WTC
 FAA Weight class: FAA_Weight
 Aerodrome category: ADG mapped to alphabet (III = C)
 Approach category: AAC
+
+
+ANALYSIS JSON OBJECT:
+
+{
+    flight: {
+        "departure_airfield": {
+            "icao": 
+            "rwy": 
+            "iso_country": 
+            "length_ft":
+            "length_m":
+            "width_ft":
+            "width_m":
+            "surface_type": 
+            "lighted":
+        },
+        "arrival_airfield": {
+            "icao": 
+            "rwy": 
+            "iso_country": 
+            "length_ft":
+            "length_m":
+            "width_ft":
+            "width_m": 
+            "surface_type": 
+            "lighted":
+        },
+        "alternate_airfield_icao":
+        "planned_dept_time":
+        "planned_arr_time": 
+        "route": 
+        "cruise_level": 
+        "aircraft": {
+            "make": 
+            "model":
+            "seats":
+            "rnav_equipped":
+            "icao_wtc":
+            "weight_class":
+            "wingspan_ft": 
+            "wingspan_m":
+            "length_ft": 
+            "length_m": 
+            "instrument_approach_category":
+            "aircraft_design_group": 
+        }
+    },
+    "notams": [
+        {
+            "title":
+            "notam_id":
+            "q":
+            "a":
+            "b":
+            "c":
+            "d":
+            "e":
+            "f":
+            "g":
+        }
+        ...
+    ]
+}
+
+Model output:
+
+from typing import List
+from pydantic import BaseModel
+
+class NotamResult(BaseModel):
+    notam_id: str
+    classification: int
+    summary: str
+
+class AnalysisOutput(BaseModel):
+
+
+{
+    [
+        {
+            "notam_id": "C1234/56",
+            "classification": 1,
+            "summary": "TAXYWAY A2 CLOSED DUE TO TARMAC DEGREDATION"
+        },
+        {
+            "notam_id": "D1234/56",
+            "classification": 1,
+            "summary": "RUNWAY 02L HAS AN INCREASED BIRD RISK BETWEEN 8AM AND 11AM"
+        }
+    ]
+}

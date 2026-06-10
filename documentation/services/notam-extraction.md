@@ -16,12 +16,12 @@ Each NOTAM maps to one `raw_notams` row. Fields that are absent are stored as `n
 | `a` | Location indicator | `A)` tag | group header ICAO (last bracket) |
 | `b` | Effective from (UTC) | `B)` tag | `FROM MM DDHHmm`, year from header |
 | `c` | Effective to (UTC) | `C)` tag | `TO MM DDHHmm` / `PERM` |
-| `d` | Schedule | `D)` tag | `DAILY...` / `HJ` / `HN` line |
+| `d` | Schedule | `D)` tag | all lines after `FROM … TO …` until the next NOTAM ID or group header |
 | `e` | NOTAM text | `E)` tag (multi-line) | body lines (multi-line) |
 | `f` | Lower limit | `F)` tag | `SFC TO ...` lower value |
 | `g` | Upper limit | `G)` tag | `... TO <limit>` upper value |
 
-Multi-line `e` (and `d`) values join source lines with a ` {\n} ` marker so the original line structure can be re-rendered to the user.
+Multi-line `e` (and `d`) values join source lines with a `{\n} ` marker (no leading space before the delimiter) so the original line structure can be re-rendered to the user.
 
 ## Format quirks handled
 
@@ -35,6 +35,7 @@ Multi-line `e` (and `d`) values join source lines with a ` {\n} ` marker so the 
   - Short alphabetic E-field continuations (e.g. `AVBL`) are kept when they are not followed by a condensed NOTAM
 - **Brackets inside `e`** (e.g. `(CHUO-KU IN TOKYO)`) are not mistaken for field tags; tags are only honoured in canonical `Q A B C D E F G` order.
 - **NAIPS abbreviated dates** (`MM DDHHmm`) are expanded to `YYMMDDHHmm` using the two-digit year from the document header line.
+- **NAIPS `d` schedule** — every line after `FROM … TO …` is treated as schedule text (including free-form values like `MON-SAT 1945-1300` or `SAT, SUN, PUBLIC HOLIDAY 2200-0830`) until the next NOTAM ID or location group header (e.g. `SYDNEY (YSSY)`).
 - Some source `e` values legitimately cut off mid-word (e.g. `... (ERSA`); these are preserved verbatim.
 
 ## Module layout
