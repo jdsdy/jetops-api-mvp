@@ -44,6 +44,7 @@ class BatchAnalysisResult(BaseModel):
     batch_stats: list[BatchCallStats]
     model: str
     token_limit_hit: bool
+    missing_notam_ids: list[str] = []
 
     @property
     def batches(self) -> int:

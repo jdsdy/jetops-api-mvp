@@ -7,6 +7,7 @@ from app.api.dependencies import (
     get_authenticated_user,
     verify_api_key,
 )
+from app.api.rate_limit import rate_limit_begin_analysis, rate_limit_create_job
 from app.core.supabase import get_supabase_client
 from app.repositories.analysis_context_repository import AnalysisContextRepository
 from app.repositories.job_repository import JobRepository
@@ -42,7 +43,7 @@ JobServiceDep = Annotated[JobService, Depends(get_job_service)]
 AnalysisServiceDep = Annotated[AnalysisService, Depends(get_analysis_service)]
 
 
-@router.post("", status_code=status.HTTP_201_CREATED)
+@router.post("", status_code=status.HTTP_201_CREATED, dependencies=[Depends(rate_limit_create_job)])
 def create_job(
     request: CreateJobRequest,
     user: AuthenticatedUserDep,
@@ -67,7 +68,11 @@ def create_job(
     return CreateJobResponse(id=job_id)
 
 
-@router.post("/analysis", status_code=status.HTTP_200_OK)
+@router.post(
+    "/analysis",
+    status_code=status.HTTP_200_OK,
+    dependencies=[Depends(rate_limit_begin_analysis)],
+)
 def begin_analysis(
     request: BeginAnalysisRequest,
     analysis_service: AnalysisServiceDep,

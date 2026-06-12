@@ -59,14 +59,17 @@ After the response is sent, `run_analysis_task` runs:
 
 1. Build flight context and log `build_context_object` stage.
 2. Fetch all `raw_notams`, batch into groups of 10, call Claude concurrently.
-3. Persist rows to `analysed_notams` and log `notam_analysis` stage.
-4. Set job status to `finished` (or `failed` on error).
+3. If any NOTAM IDs are missing from batch responses, insert completed rows plus placeholder rows (`category`/`summary` `null`) for missing NOTAMs, set status to `retrying`, and re-analyse only those NOTAMs in batches of 5. Update placeholder rows when retry succeeds.
+4. Persist any remaining rows (no-retry path) to `analysed_notams` and log `notam_analysis` stage.
+5. Set job status to `finished` (all NOTAMs analysed), `partial_finish` (some still missing after retry), or `failed` on error.
 
 ## Side effects
 
 | Before | After (sync) | After (background success) |
 |---|---|---|
-| `awaiting_confirmation` | `processing_analysis` | `finished` |
+| `awaiting_confirmation` | `processing_analysis` | `finished` or `partial_finish` |
+
+During retry of missing NOTAMs the status is briefly `retrying`.
 
 ## Errors
 
@@ -75,6 +78,7 @@ After the response is sent, `run_analysis_task` runs:
 | `400` | Job exists but status is not `awaiting_confirmation`, or body fields do not match the job |
 | `404` | Job not found |
 | `401` | Missing or invalid auth |
+| `429` | Per-user rate limit exceeded (1 request per 2 minutes) |
 | `422` | Invalid or incomplete request body |
 
 ## Tests

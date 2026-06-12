@@ -140,3 +140,32 @@ def test_build_notam_analysis_metadata_computes_cost() -> None:
     assert metadata.output_tokens == 1_000_000
     assert metadata.est_cost == pytest.approx(18.0)
     assert metadata.slowest_batch_ms == 100
+    assert metadata.retried_notam_ids is None
+
+
+def test_build_notam_analysis_metadata_includes_retried_notam_ids() -> None:
+    batch_result = BatchAnalysisResult(
+        results=[],
+        batch_stats=[
+            BatchCallStats(
+                duration_ms=100,
+                input_tokens=100,
+                output_tokens=50,
+                batch_size=2,
+            )
+        ],
+        model="claude-sonnet-4-6",
+        token_limit_hit=False,
+    )
+
+    metadata = build_notam_analysis_metadata(
+        batch_result,
+        input_cost_per_m=3.0,
+        output_cost_per_m=15.0,
+        retried_notam_ids=["C0478/26 NOTAMN", "C0481/26 NOTAMN"],
+    )
+
+    assert metadata.retried_notam_ids == [
+        "C0478/26 NOTAMN",
+        "C0481/26 NOTAMN",
+    ]

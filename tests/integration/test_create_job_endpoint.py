@@ -1,7 +1,8 @@
 from uuid import uuid4
 
-import pytest
+from fastapi import HTTPException
 
+from app.api.rate_limit import RATE_LIMIT_EXCEEDED_DETAIL, rate_limit_create_job
 from app.core.errors import JobStepError
 from tests.conftest import auth_headers, client, valid_job_payload
 
@@ -59,3 +60,24 @@ def test_storage_path_mismatch_returns_400(client, mock_job_service) -> None:
     )
 
     assert response.status_code == 400
+
+
+def test_create_job_rate_limited_returns_429(client) -> None:
+    def raise_rate_limit() -> None:
+        raise HTTPException(
+            status_code=429,
+            detail=RATE_LIMIT_EXCEEDED_DETAIL,
+            headers={"Retry-After": "10"},
+        )
+
+    client.app.dependency_overrides[rate_limit_create_job] = raise_rate_limit
+
+    response = client.post(
+        "/v1/jobs",
+        json=valid_job_payload(),
+        headers=auth_headers(),
+    )
+
+    assert response.status_code == 429
+    assert response.json()["detail"] == RATE_LIMIT_EXCEEDED_DETAIL
+    assert response.headers["Retry-After"] == "10"

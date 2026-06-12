@@ -55,6 +55,7 @@ class NotamAnalysisMetadata(BaseModel):
     input_tokens: int
     output_tokens: int
     est_cost: float
+    retried_notam_ids: list[str] | None = None
 
 
 def _airfield_full_data_found(airfield: AirfieldContext) -> bool:
@@ -82,6 +83,7 @@ def build_notam_analysis_metadata(
     *,
     input_cost_per_m: float,
     output_cost_per_m: float,
+    retried_notam_ids: list[str] | None = None,
 ) -> NotamAnalysisMetadata:
     input_tokens = batch_result.input_tokens
     output_tokens = batch_result.output_tokens
@@ -99,6 +101,7 @@ def build_notam_analysis_metadata(
         input_tokens=input_tokens,
         output_tokens=output_tokens,
         est_cost=est_cost,
+        retried_notam_ids=retried_notam_ids,
     )
 
 

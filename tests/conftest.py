@@ -6,6 +6,7 @@ from fastapi.testclient import TestClient
 from supabase_auth.types import User
 
 from app.api.dependencies import get_authenticated_user, verify_api_key
+from app.api.rate_limit import rate_limit_begin_analysis, rate_limit_create_job
 from app.api.v1.endpoints.jobs import get_job_service
 from app.core.config import Settings, get_settings
 from app.main import app
@@ -26,6 +27,8 @@ def test_settings() -> Settings:
         SUPABASE_URL="https://example.supabase.co",
         SUPABASE_SECRET_KEY="test-secret-key",
         ANTHROPIC_API_KEY="test-anthropic-key",
+        UPSTASH_REDIS_REST_URL="https://example.upstash.io",
+        UPSTASH_REDIS_REST_TOKEN="test-upstash-token",
     )
 
 
@@ -55,6 +58,8 @@ def client(
     app.dependency_overrides[verify_api_key] = lambda: None
     app.dependency_overrides[get_authenticated_user] = lambda: mock_user
     app.dependency_overrides[get_job_service] = lambda: mock_job_service
+    app.dependency_overrides[rate_limit_create_job] = lambda: None
+    app.dependency_overrides[rate_limit_begin_analysis] = lambda: None
 
     with (
         patch("app.api.v1.endpoints.jobs.run_extraction"),

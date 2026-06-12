@@ -6,7 +6,9 @@ from supabase import Client
 FLIGHT_PLAN_PDFS_BUCKET = "flight_plan_pdfs"
 AWAITING_CONFIRMATION = "awaiting_confirmation"
 PROCESSING_ANALYSIS = "processing_analysis"
+RETRYING = "retrying"
 FINISHED = "finished"
+PARTIAL_FINISH = "partial_finish"
 
 
 class JobRepository:

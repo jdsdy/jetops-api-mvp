@@ -74,6 +74,16 @@ Job created and PDF verified.
 
 Missing or invalid `x-api-key`, or missing/invalid Bearer JWT.
 
+### 429 Too Many Requests
+
+Per-user rate limit exceeded (1 request per 10 seconds). Response includes a `Retry-After` header (seconds until the next allowed request).
+
+```json
+{
+  "detail": "Rate limit exceeded. Please try again later."
+}
+```
+
 ### 404 Not Found
 
 PDF not found in storage after the job row was created. Response body:
@@ -107,6 +117,8 @@ Unexpected failure after the job row was created. Response body:
 | `API_KEY` | Expected value for the `x-api-key` header |
 | `SUPABASE_URL` | Supabase project URL |
 | `SUPABASE_SECRET_KEY` | Supabase secret key for auth validation, storage access, and database writes |
+| `UPSTASH_REDIS_REST_URL` | Upstash Redis REST URL for rate limiting |
+| `UPSTASH_REDIS_REST_TOKEN` | Upstash Redis REST token for rate limiting |
 
 Load order: `.env`, then `.env.local` (local overrides).
 

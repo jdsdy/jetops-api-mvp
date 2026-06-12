@@ -5,6 +5,7 @@ import pytest
 from fastapi.testclient import TestClient
 
 from app.api.dependencies import get_authenticated_user, verify_api_key
+from app.api.rate_limit import rate_limit_begin_analysis
 from app.api.v1.endpoints.jobs import get_analysis_service
 from app.core.config import Settings, get_settings
 from app.main import app
@@ -38,6 +39,7 @@ def analysis_client(
     app.dependency_overrides[verify_api_key] = lambda: None
     app.dependency_overrides[get_authenticated_user] = lambda: mock_user
     app.dependency_overrides[get_analysis_service] = lambda: mock_analysis_service
+    app.dependency_overrides[rate_limit_begin_analysis] = lambda: None
 
     with TestClient(app) as test_client:
         yield test_client
