@@ -1,25 +1,26 @@
 # Flight data extraction
 
-Rule-based extraction of flight plan fields from ForeFlight and NAIPS briefing PDFs.
+Rule-based extraction of flight plan fields from ForeFlight, NAIPS, and OzRunways briefing PDFs.
 
 See also: [POST /v1/jobs](../endpoints/v1-jobs-create.md) for how extraction is triggered after job creation.
 
 ## Extracted fields
 
-| Field | ForeFlight | NAIPS | DB target |
+| Field | ForeFlight | NAIPS | OzRunways | DB target |
 |---|---|---|---|
-| `departure_icao` | Header + ETD/ETA line | `STAGE` line | `flights.departure_icao` |
-| `arrival_icao` | Header + ETD/ETA line | `STAGE` line | `flights.arrival_icao` |
-| `planned_dept_time` | Zulu time + header date | always null | `flight_plans.planned_dept_time` |
-| `planned_arr_time` | Zulu time + header date | always null | `flight_plans.planned_arr_time` |
-| `route` | `Route Report` section | Wind cross-section waypoints | `flight_plans.route` |
-| `cruise_level` | `@ FLnnn` on cruise line | `STAGE` line | `flight_plans.cruise_level` |
-| `alt_icao` | `PRIMARY ALTERNATE` page | `ALTN` line | `flight_plans.alt_icao` |
-| `source_app` | `foreflight` | `naips` | `flight_plans.source_app` |
+| `departure_icao` | Header + ETD/ETA line | `STAGE` line | first `ABCD-EFGH` line | `flights.departure_icao` |
+| `arrival_icao` | Header + ETD/ETA line | `STAGE` line | first `ABCD-EFGH` line | `flights.arrival_icao` |
+| `planned_dept_time` | Zulu time + header date | always null | `Total: … ETD: DD Mon HHMM UTC` | `flight_plans.planned_dept_time` |
+| `planned_arr_time` | Zulu time + header date | always null | ETD + `H:MM` flight duration | `flight_plans.planned_arr_time` |
+| `route` | `Route Report` section | Wind cross-section waypoints | always null | `flight_plans.route` |
+| `cruise_level` | `@ FLnnn` on cruise line | `STAGE` line | always null | `flight_plans.cruise_level` |
+| `alt_icao` | `PRIMARY ALTERNATE` page | `ALTN` line | always null | `flight_plans.alt_icao` |
+| `source_app` | `foreflight` | `naips` | `ozrunways` | `flight_plans.source_app` |
 
 ## Format detection
 
 - **NAIPS:** document starts with `Specific PreFlight Information Bulletin Number:`
+- **OzRunways:** first `ABCD-EFGH` line **and** first `Total: … NM, H:MM ETD: DD Mon HHMM UTC` line
 - **ForeFlight:** all other briefing PDFs in the current set
 
 ## Module layout
@@ -27,7 +28,7 @@ See also: [POST /v1/jobs](../endpoints/v1-jobs-create.md) for how extraction is 
 | Module | Role |
 |---|---|
 | [`app/services/pdf_extractor.py`](../../app/services/pdf_extractor.py) | pdfplumber text extraction (incl. two-column landscape pages) |
-| [`app/services/flight_parser.py`](../../app/services/flight_parser.py) | Format detection, shared helpers, ForeFlight + NAIPS parsers, `parse_flight_data` |
+| [`app/services/flight_parser.py`](../../app/services/flight_parser.py) | Format detection, shared helpers, ForeFlight + NAIPS + OzRunways parsers, `parse_flight_data` |
 | [`app/services/extraction_task.py`](../../app/services/extraction_task.py) | Background task: download → parse → persist → `awaiting_confirmation` |
 | [`app/services/pipeline_stage.py`](../../app/services/pipeline_stage.py) | Timed stage logs to `pipeline_stage_logs` |
 

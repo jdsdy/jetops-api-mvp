@@ -8,9 +8,25 @@ from app.schemas.flight import FlightData, PlanSource
 # ---------------------------------------------------------------------------
 
 
+_OZ_ICAO_PAIR = re.compile(r"^([A-Z]{4})-([A-Z]{4})$", re.MULTILINE)
+_OZ_TOTAL_ETD = re.compile(
+    r"Total:\s*[\d.]+\s*NM,\s*(\d+):(\d+)\s+ETD:\s*(\d{1,2})\s+([A-Za-z]{3})\s+(\d{4})\s+UTC",
+    re.MULTILINE,
+)
+
+
+def _is_ozrunways(text: str) -> bool:
+    return (
+        _OZ_ICAO_PAIR.search(text) is not None
+        and _OZ_TOTAL_ETD.search(text) is not None
+    )
+
+
 def detect_plan_format(text: str) -> PlanSource:
     if text.lstrip().startswith("Specific PreFlight Information Bulletin Number:"):
         return "naips"
+    if _is_ozrunways(text):
+        return "ozrunways"
     return "foreflight"
 
 
@@ -239,12 +255,71 @@ def _parse_naips_route(text: str, departure_icao: str, arrival_icao: str) -> str
 
 
 # ---------------------------------------------------------------------------
+# OzRunways parser
+# ---------------------------------------------------------------------------
+
+
+def ozrunways_document_year(text: str) -> str:
+    return _ozrunways_etd_info(text)[1]
+
+
+def _ozrunways_etd_info(text: str) -> tuple[date, str]:
+    match = _OZ_TOTAL_ETD.search(text)
+    if not match:
+        raise ValueError("OzRunways Total/ETD line not found")
+
+    duration_hours, duration_minutes, day, month_name, hhmm = match.groups()
+    year = datetime.now(UTC).year
+    month = _MONTHS[month_name]
+    flight_date = date(year, month, int(day))
+    hour, minute = _parse_zulu_hhmm(hhmm)
+    return flight_date, f"{year % 100:02d}"
+
+
+def _parse_ozrunways(text: str) -> FlightData:
+    icao_match = _OZ_ICAO_PAIR.search(text)
+    if not icao_match:
+        raise ValueError("OzRunways ICAO pair line not found")
+
+    flight_date, _ = _ozrunways_etd_info(text)
+    etd_match = _OZ_TOTAL_ETD.search(text)
+    assert etd_match is not None
+    duration_hours, duration_minutes, _, _, hhmm = etd_match.groups()
+    hour, minute = _parse_zulu_hhmm(hhmm)
+    planned_dept_time = datetime(
+        flight_date.year,
+        flight_date.month,
+        flight_date.day,
+        hour,
+        minute,
+        tzinfo=UTC,
+    )
+    planned_arr_time = planned_dept_time + timedelta(
+        hours=int(duration_hours),
+        minutes=int(duration_minutes),
+    )
+
+    departure_icao, arrival_icao = icao_match.groups()
+    return FlightData(
+        departure_icao=departure_icao,
+        arrival_icao=arrival_icao,
+        planned_dept_time=planned_dept_time,
+        planned_arr_time=planned_arr_time,
+        route=None,
+        cruise_level=None,
+        alt_icao=None,
+        source_app="ozrunways",
+    )
+
+
+# ---------------------------------------------------------------------------
 # Public API
 # ---------------------------------------------------------------------------
 
 _PARSERS = {
     "foreflight": _parse_foreflight,
     "naips": _parse_naips,
+    "ozrunways": _parse_ozrunways,
 }
 
 

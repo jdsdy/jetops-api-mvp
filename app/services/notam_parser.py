@@ -1,7 +1,7 @@
 import re
 
 from app.schemas.notam import RawNotam
-from app.services.flight_parser import detect_plan_format
+from app.services.flight_parser import detect_plan_format, ozrunways_document_year
 
 # ---------------------------------------------------------------------------
 # Shared helpers
@@ -458,12 +458,124 @@ def _parse_naips_bc(match: re.Match[str], year: str) -> tuple[str, str]:
 
 
 # ---------------------------------------------------------------------------
+# OzRunways NOTAM parser
+# ---------------------------------------------------------------------------
+
+_OZ_SECTION_HEADER = "NOTAMs"
+
+_OZ_ID_LINE = re.compile(
+    r"^([A-Z0-9/]+)\s+-\s+"
+    r"([A-Z]\d{1,4}/\d{2}(?: REPLACE [A-Z]\d{1,4}/\d{2})?)"
+    r"\s*(?:[★☆]\s*)*$"
+)
+
+
+_OZ_FOOTER = re.compile(r"^Runways \d")
+
+
+def _strip_ozrunways_artifacts(lines: list[str]) -> list[str]:
+    return [
+        line.strip()
+        for line in lines
+        if line.strip()
+        and "OzRunways" not in line
+        and not _OZ_FOOTER.match(line.strip())
+    ]
+
+
+def _parse_ozrunways_notams(text: str) -> list[RawNotam]:
+    year = ozrunways_document_year(text)
+    section = _ozrunways_section_lines(text)
+    lines = _strip_ozrunways_artifacts(section)
+    n = len(lines)
+
+    notams: list[RawNotam] = []
+    i = 0
+    while i < n:
+        stripped = lines[i]
+        id_match = _OZ_ID_LINE.match(stripped)
+        if id_match:
+            notam, i = _collect_ozrunways_notam(lines, i, id_match, year)
+            notams.append(notam)
+            continue
+        i += 1
+
+    return notams
+
+
+def _ozrunways_section_lines(text: str) -> list[str]:
+    lines = text.splitlines()
+    for index, line in enumerate(lines):
+        if line.strip() == _OZ_SECTION_HEADER:
+            return lines[index + 1 :]
+    return lines
+
+
+def _collect_ozrunways_notam(
+    lines: list[str],
+    start: int,
+    id_match: re.Match[str],
+    year: str,
+) -> tuple[RawNotam, int]:
+    location_a = id_match.group(1)
+    notam_id = id_match.group(2)
+    e_lines: list[str] = []
+    d_lines: list[str] = []
+    b = c = f = g = None
+    seen_bc = False
+
+    j = start + 1
+    n = len(lines)
+    while j < n:
+        stripped = lines[j]
+
+        if _OZ_ID_LINE.match(stripped):
+            break
+
+        if seen_bc:
+            d_lines.append(stripped)
+            j += 1
+            continue
+
+        fg_match = _NAIPS_FG.match(stripped)
+        if fg_match:
+            f, g = fg_match.group(1), fg_match.group(2)
+            j += 1
+            continue
+
+        bc_match = _NAIPS_BC.match(stripped)
+        if bc_match:
+            b, c = _parse_naips_bc(bc_match, year)
+            seen_bc = True
+            j += 1
+            continue
+
+        e_lines.append(stripped)
+        j += 1
+
+    return (
+        RawNotam(
+            notam_id=notam_id,
+            a=location_a,
+            b=b,
+            c=c,
+            d=_join_marked(d_lines),
+            e=_join_marked(e_lines),
+            f=f,
+            g=g,
+        ),
+        j,
+    )
+
+
+# ---------------------------------------------------------------------------
 # Public API
 # ---------------------------------------------------------------------------
 
 _PARSERS = {
     "foreflight": _parse_foreflight_notams,
     "naips": _parse_naips_notams,
+    "ozrunways": _parse_ozrunways_notams,
 }
 
 

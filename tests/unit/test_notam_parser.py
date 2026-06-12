@@ -5,11 +5,18 @@ from app.services.notam_parser import (
     _naips_document_year,
     _parse_foreflight_notams,
     _parse_naips_notams,
+    _parse_ozrunways_notams,
+    _strip_ozrunways_artifacts,
     _strip_page_breaks,
 )
 
 FF_SECTION = "NOTAMs\nDeparture YBBN-Brisbane\n"
 NAIPS_HEADER = "0521 UTC 05/06/26 AIRSERVICES AUSTRALIA\nNOTAM INFORMATION\n-----------------\n"
+OZ_HEADER = (
+    "YPPH-YBRM\n"
+    "Total: 903 NM, 3:29 ETD: 10 Jun 0626 UTC\n"
+    "NOTAMs\n"
+)
 
 
 def _parse_foreflight(body: str):
@@ -19,6 +26,11 @@ def _parse_foreflight(body: str):
 
 def _parse_naips(body: str):
     notams = _parse_naips_notams(NAIPS_HEADER + body)
+    return {notam.notam_id: notam for notam in notams}
+
+
+def _parse_ozrunways(body: str):
+    notams = _parse_ozrunways_notams(OZ_HEADER + body)
     return {notam.notam_id: notam for notam in notams}
 
 
@@ -303,3 +315,98 @@ def test_d_field_null_when_bc_immediately_followed_by_next_id() -> None:
     notam = _parse_naips(body)["H3992/26"]
     assert notam.d is None
     assert notam.e == "RWY 34L NOT TO STD"
+
+
+# --- OzRunways NOTAMs ---
+
+
+def test_ozrunways_id_strips_stars_and_sets_a() -> None:
+    body = (
+        "YPJT - C124/26 ★☆☆☆☆\n"
+        "8 OBST TOWER CRANES (LIT) 385FT AMSL ERECTED\n"
+        "FROM 05 052300 TO 07 310900\n"
+    )
+    notam = _parse_ozrunways(body)["C124/26"]
+    assert notam.a == "YPJT"
+    assert notam.b == "2605052300"
+    assert notam.c == "2607310900"
+    assert notam.d is None
+
+
+def test_ozrunways_replace_id_and_hj_d_field() -> None:
+    body = (
+        "YPPH - C373/26 REPLACE C113/26 ★★★☆☆\n"
+        "LOC 'IGD' 109.5 RWY 21 SUBJ TO INTRP\n"
+        "FROM 05 150339 TO 07 151000 EST\n"
+        "HJ\n"
+    )
+    notam = _parse_ozrunways(body)["C373/26 REPLACE C113/26"]
+    assert notam.a == "YPPH"
+    assert notam.c == "2607151000 EST"
+    assert notam.d == "HJ"
+
+
+def test_ozrunways_schedule_d_line() -> None:
+    body = (
+        "YPPH - C412/26 ★★★☆☆\n"
+        "LINK 8 CL LGT U/S\n"
+        "FROM 06 082300 TO 06 100800\n"
+        "DAILY 2300-0800\n"
+    )
+    notam = _parse_ozrunways(body)["C412/26"]
+    assert notam.d == "DAILY 2300-0800"
+
+
+def test_ozrunways_expanded_validity_windows_go_to_d_not_bc() -> None:
+    body = (
+        "PEX - C1141/26 REPLACE C1135/26 ★★★☆☆\n"
+        "R153A ACT (RA2) DUE MIL FLYING\n"
+        "SFC TO 2000FT AMSL\n"
+        "FROM 06 090000 TO 06 120900\n"
+        "2606090000 TO 2606090900\n"
+        "2606100000 TO 2606100900\n"
+        "2606110000 TO 2606110900\n"
+        "2606120000 TO 2606120900\n"
+    )
+    notam = _parse_ozrunways(body)["C1141/26 REPLACE C1135/26"]
+    assert notam.a == "PEX"
+    assert notam.b == "2606090000"
+    assert notam.c == "2606120900"
+    assert notam.f == "SFC"
+    assert notam.g == "2000FT AMSL"
+    assert notam.d == (
+        "2606090000 TO 2606090900"
+        f"{E_JOIN}2606100000 TO 2606100900"
+        f"{E_JOIN}2606110000 TO 2606110900"
+        f"{E_JOIN}2606120000 TO 2606120900"
+    )
+
+
+def test_ozrunways_perm_expiry() -> None:
+    body = (
+        "YMEK - C33/26 ★☆☆☆☆\n"
+        "DECLARED DISTANCE AND GRADIENT CHANGES\n"
+        "FROM 05 080808 TO PERM\n"
+    )
+    notam = _parse_ozrunways(body)["C33/26"]
+    assert notam.c == "PERM"
+
+
+def test_strip_ozrunways_artifacts_removes_footers() -> None:
+    lines = [
+        "FROM 06 082300 TO 06 100800",
+        "OzRunways 10 Jun 2026 at 14:48",
+        "YPPH - C412/26 ★★★☆☆",
+        "LINK 8 CL LGT U/S",
+        "FROM 06 090000 TO 06 120900",
+        "8:37 AWST OzRunways 10 Jun 2026 at 14:48:37 AWST",
+        "Runways 10 Jun 2026 at 14:48:37 AWST",
+        "YPPH - C435/26 REPLACE C201/26 ★★★★★",
+    ]
+    assert _strip_ozrunways_artifacts(lines) == [
+        "FROM 06 082300 TO 06 100800",
+        "YPPH - C412/26 ★★★☆☆",
+        "LINK 8 CL LGT U/S",
+        "FROM 06 090000 TO 06 120900",
+        "YPPH - C435/26 REPLACE C201/26 ★★★★★",
+    ]

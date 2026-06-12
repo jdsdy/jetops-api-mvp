@@ -402,5 +402,130 @@
         "g": "400FT AGL"
       }
     ]
+  },
+  {
+    "pdf": "2026-06-10 14-48AWST YPPH-YBRM OZ-NEW.pdf",
+    "notams": [
+      {
+        "notam_id": "C138/26",
+        "title": null,
+        "q": null,
+        "a": "YPJT",
+        "b": "2606020120",
+        "c": "2606300600 EST",
+        "d": null,
+        "e": "NDB 'JT' 281 PILOT MNT",
+        "f": null,
+        "g": null
+      },
+      {
+        "notam_id": "C124/26",
+        "title": null,
+        "q": null,
+        "a": "YPJT",
+        "b": "2605052300",
+        "c": "2607310900",
+        "d": null,
+        "e": "8 OBST TOWER CRANES (LIT) 385FT AMSL ERECTED {\\n} OPR WI AN AREA BOUNDED BY: {\\n} PSN 320416.91S 1155049.93E BRG 312 MAG 2.43NM FM ARP {\\n} PSN 320416.75S 1155057.80E BRG 313 MAG 2.26NM FM ARP {\\n} PSN 320423.57S 1155050.02E BRG 309 MAG 2.26NM FM ARP {\\n} PSN 320423.69E 1155056.75E BRG 311 MAG 2.19NM FM ARP {\\n} INFRINGES OUTER HORIZONTAL SFC BY 97FT",
+        "f": null,
+        "g": null
+      },
+      {
+        "notam_id": "C412/26",
+        "title": null,
+        "q": null,
+        "a": "YPPH",
+        "b": "2606082300",
+        "c": "2606100800",
+        "d": "DAILY 2300-0800",
+        "e": "LINK 8 CL LGT U/S",
+        "f": null,
+        "g": null
+      },
+      {
+        "notam_id": "C437/26",
+        "title": null,
+        "q": null,
+        "a": "YPPH",
+        "b": "2606100158",
+        "c": "2608220900",
+        "d": "MON-FRI 2300-0900",
+        "e": "UA OPS (MULTI-ROTOR BLW 25KG) WILL TAKE PLACE {\\n} OPR WI 750M EITHER SIDE OF A LINE BTN {\\n} PSN 315841S 1155819E BRG 173 MAG 2.28NM FM ARP AND {\\n} PSN 315602S 1155915E BRG 070 MAG 2063M FM ARP {\\n} OPR WILL MNT TWR FREQ 127.4 {\\n} OPR CTC TEL: 0432 213 304",
+        "f": "SFC",
+        "g": "210FT AMSL"
+      },
+      {
+        "notam_id": "C373/26 REPLACE C113/26",
+        "title": null,
+        "q": null,
+        "a": "YPPH",
+        "b": "2605150339",
+        "c": "2607151000 EST",
+        "d": "HJ",
+        "e": "LOC 'IGD' 109.5 RWY 21 SUBJ TO INTRP {\\n} POSSIBLE SIGNAL OSCILLATIONS ON 'PH21' LOCALISER ALONG THE APCH {\\n} PATH {\\n} DUE CRANE OPS AT TERMINAL 2",
+        "f": null,
+        "g": null
+      },
+      {
+        "notam_id": "C1141/26 REPLACE C1135/26",
+        "title": null,
+        "q": null,
+        "a": "PEX",
+        "b": "2606090000",
+        "c": "2606120900",
+        "d": "2606090000 TO 2606090900 {\\n} 2606100000 TO 2606100900 {\\n} 2606110000 TO 2606110900 {\\n} 2606120000 TO 2606120900",
+        "e": "R153A ACT (RA2) DUE MIL FLYING",
+        "f": "SFC",
+        "g": "2000FT AMSL"
+      },
+      {
+        "notam_id": "C1646/25",
+        "title": null,
+        "q": null,
+        "a": "YMMM",
+        "b": "2607240214",
+        "c": "PERM",
+        "d": null,
+        "e": "AIP CHARTS AMD {\\n} ADD THE FLW {\\n} ADD: LIT MET MAST 2415FT AMSL PSN 233057S 1200548E",
+        "f": null,
+        "g": null
+      },
+      {
+        "notam_id": "B178/26 REPLACE B177/26",
+        "title": null,
+        "q": null,
+        "a": "YMMM/YBBB",
+        "b": "2605300413",
+        "c": "2606191400 EST",
+        "d": null,
+        "e": "VOLMET 'DERBY' 128.45 U/S",
+        "f": null,
+        "g": null
+      },
+      {
+        "notam_id": "C1525/26",
+        "title": null,
+        "q": null,
+        "a": "YMMM/YBBB",
+        "b": "2606010000",
+        "c": "2606150000",
+        "d": null,
+        "e": "TRIGGER NOTAM AIC H25/26 {\\n} RETIREMENT OF ROUTE SECTOR WIND TEMPERATURE FORECAST PRODUCT {\\n} AVBL FM AIRSERVICES WEBSITE {\\n} WWW.AIRSERVICESAUSTRALIA.COM/AIP/AIP.ASP",
+        "f": null,
+        "g": null
+      },
+      {
+        "notam_id": "C33/26",
+        "title": null,
+        "q": null,
+        "a": "YMEK",
+        "b": "2605080808",
+        "c": "PERM",
+        "d": null,
+        "e": "DECLARED DISTANCE AND GRADIENT CHANGES {\\n} RWY TODA {\\n} 27 2241(2.04) {\\n} 15 1125(1.35) {\\n} SUPPLEMENTARY TKOF DISTANCES {\\n} RWY27- 2161(1.6) 2221(1.9) {\\n} AMD ENR SUPPLEMENT AUSTRALIA (ERSA)",
+        "f": null,
+        "g": null
+      }
+    ]
   }
 ]

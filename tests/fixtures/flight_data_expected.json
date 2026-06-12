@@ -42,5 +42,16 @@
     "cruise_level": "FL430",
     "alt_icao": "YPTN",
     "source_app": "naips"
+  },
+  {
+    "pdf": "2026-06-10 14-48AWST YPPH-YBRM OZ-NEW.pdf",
+    "departure_icao": "YPPH",
+    "arrival_icao": "YBRM",
+    "planned_dept_time": "2026-06-10T06:26:00+00:00",
+    "planned_arr_time": "2026-06-10T09:55:00+00:00",
+    "route": null,
+    "cruise_level": null,
+    "alt_icao": null,
+    "source_app": "ozrunways"
   }
 ]
