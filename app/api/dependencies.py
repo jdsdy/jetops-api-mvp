@@ -1,7 +1,8 @@
 import secrets
 from typing import Annotated, NoReturn
+from uuid import UUID
 
-from fastapi import Depends, Header, HTTPException, status
+from fastapi import Depends, Header, HTTPException, Request, status
 from fastapi.security import HTTPAuthorizationCredentials, HTTPBearer
 from supabase_auth.types import User
 
@@ -27,6 +28,7 @@ def verify_api_key(
 
 
 def get_authenticated_user(
+    request: Request,
     credentials: Annotated[
         HTTPAuthorizationCredentials | None,
         Depends(bearer_scheme),
@@ -44,6 +46,7 @@ def get_authenticated_user(
     if response.user is None:
         _raise_unauthorized()
 
+    request.state.user_id = UUID(response.user.id)
     return response.user
 
 

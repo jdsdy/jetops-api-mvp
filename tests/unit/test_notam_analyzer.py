@@ -89,6 +89,7 @@ def test_analyze_notam_batches_empty_returns_zero_stats() -> None:
         ANTHROPIC_API_KEY="a",
         UPSTASH_REDIS_REST_URL="https://example.upstash.io",
         UPSTASH_REDIS_REST_TOKEN="token",
+        BETA_SIGNUP_CODE="test-signup-code",
     )
 
     result = analyze_notam_batches([], settings=settings)
@@ -117,6 +118,7 @@ def test_analyze_notam_batches_aggregates_tokens_and_detects_limit() -> None:
         UPSTASH_REDIS_REST_TOKEN="token",
         NOTAM_ANALYSIS_MAX_TOKENS=12000,
         NOTAM_ANALYSIS_MAX_CONCURRENCY=2,
+        BETA_SIGNUP_CODE="test-signup-code",
     )
 
     def fake_analyze(batch, *, client, settings):
@@ -183,6 +185,7 @@ def test_analyze_batch_calls_messages_create_with_schema_and_caching() -> None:
         ANTHROPIC_API_KEY="a",
         UPSTASH_REDIS_REST_URL="https://example.upstash.io",
         UPSTASH_REDIS_REST_TOKEN="token",
+        BETA_SIGNUP_CODE="test-signup-code",
     )
     mock_text_block = MagicMock()
     mock_text_block.type = "text"
@@ -210,7 +213,7 @@ def test_analyze_batch_calls_messages_create_with_schema_and_caching() -> None:
             "type": "json_schema",
             "schema": ANALYSIS_OUTPUT_JSON_SCHEMA,
         },
-        "effort": "medium",
+        "effort": "low",
     }
     assert call_kwargs["system"][0]["cache_control"] == {"type": "ephemeral"}
 
@@ -245,6 +248,7 @@ def test_analyze_batch_returns_missing_instead_of_raising() -> None:
         ANTHROPIC_API_KEY="a",
         UPSTASH_REDIS_REST_URL="https://example.upstash.io",
         UPSTASH_REDIS_REST_TOKEN="token",
+        BETA_SIGNUP_CODE="test-signup-code",
     )
     mock_text_block = MagicMock()
     mock_text_block.type = "text"
@@ -278,6 +282,7 @@ def test_analyze_notam_batches_collects_missing_from_failed_batches() -> None:
         ANTHROPIC_API_KEY="a",
         UPSTASH_REDIS_REST_URL="https://example.upstash.io",
         UPSTASH_REDIS_REST_TOKEN="token",
+        BETA_SIGNUP_CODE="test-signup-code",
     )
 
     def fake_analyze(current_batch, *, client, settings):

@@ -15,6 +15,7 @@ class Settings(BaseSettings):
     ANTHROPIC_API_KEY: str
     UPSTASH_REDIS_REST_URL: str
     UPSTASH_REDIS_REST_TOKEN: str
+    BETA_SIGNUP_CODE: str
 
     NOTAM_ANALYSIS_MODEL: str = "claude-sonnet-4-6"
     NOTAM_ANALYSIS_MAX_TOKENS: int = 18000

@@ -29,6 +29,7 @@ def test_settings() -> Settings:
         ANTHROPIC_API_KEY="test-anthropic-key",
         UPSTASH_REDIS_REST_URL="https://example.upstash.io",
         UPSTASH_REDIS_REST_TOKEN="test-upstash-token",
+        BETA_SIGNUP_CODE="test-signup-code",
     )
 
 
