@@ -1,0 +1,163 @@
+jetops-api/
+├── main.py
+├── routers/
+│   ├── analysis.py          # POST /analyze, GET /jobs/{job_id}
+│   ├── jobs.py              # GET /jobs/{job_id}
+│   └── health.py            # GET /health
+├── services/
+│   ├── pdf_extractor.py     # pdfplumber text extraction
+│   ├── notam_parser.py      # Rule-based NOTAM parsing
+│   ├── flight_parser.py     # Rule-based + light AI flight data
+│   ├── notam_analyzer.py    # Claude analysis, async batches
+│   └── job_store.py         # Job state via Supabase
+├── models/
+│   ├── notam.py             # Pydantic: RawNOTAM, AnalysedNOTAM
+│   ├── flight.py            # Pydantic: FlightData
+│   └── job.py               # Pydantic: Job, JobStatus
+└── config.py
+
+NEED TO EXTRACT FROM PDF:
+
+Flight data
+===========
+Route: string
+Departure time: string (unix timestamp)
+Departure rwy: string
+Departure icao: string
+Arrival time: string (unix timestamp)
+Arrival rwy: string
+Arrival icao: string
+Time en route: int
+Aircraft weight: int
+
+
+NOTAM STRUCTURE CHANGES FROM FOREFLIGHT TO NAIPS
+
+Foreflight:
+C0316/23 NOTAMN
+Q) YMMM/QICCT/I/NBO/A/000/999/3518S14912E005
+A) YSCB
+B) 2308272200 C) 2309010700
+D) DAILY 2200-0700
+E) ILS ‘ICB’ 109.5 RWY 35 ON TEST, DO NOT USE
+ FALSE INDICATIONS POSSIBLE
+
+NAIPS:
+CANBERRA (YSCB) - present at the top, notams grouped by location
+C316/23 - ID line
+ILS 'ICB' 109.5 RWY 35 ON TEST, DO NOT USE - E line
+FALSE INDICATIONS POSSIBLE - E line
+FROM 08 272200 TO 09 010700 - B and C lines
+DAILY 2200-0700 - D line
+
+Naips notams always begin with ID > E > B + C > D and will never include Q, G, or A
+
+Differentiate by regex:
+
+[A-Z][1-4 digit number]/[any length number]
+
+
+Aircraft data:
+
+These are the columns in the spreadsheet relevant to the aircraft data.
+
+Manufacturer: Manufacturer
+Model: Model_BADA
+Wingspan: Wingspan_ft_without_winglets_sharklets or Wingspan_ft_with_winglets_sharklets depending which one is null. Defaults to with_winglets if both are present.
+Length: Length_ft
+ICAO Weight class: ICAO_WTC
+FAA Weight class: FAA_Weight
+Aerodrome category: ADG mapped to alphabet (III = C)
+Approach category: AAC
+
+
+ANALYSIS JSON OBJECT:
+
+{
+    flight: {
+        "departure_airfield": {
+            "icao": 
+            "rwy": 
+            "iso_country": 
+            "length_ft":
+            "length_m":
+            "width_ft":
+            "width_m":
+            "surface_type": 
+            "lighted":
+        },
+        "arrival_airfield": {
+            "icao": 
+            "rwy": 
+            "iso_country": 
+            "length_ft":
+            "length_m":
+            "width_ft":
+            "width_m": 
+            "surface_type": 
+            "lighted":
+        },
+        "alternate_airfield_icao":
+        "planned_dept_time":
+        "planned_arr_time": 
+        "route": 
+        "cruise_level": 
+        "aircraft": {
+            "make": 
+            "model":
+            "seats":
+            "rnav_equipped":
+            "icao_wtc":
+            "weight_class":
+            "wingspan_ft": 
+            "wingspan_m":
+            "length_ft": 
+            "length_m": 
+            "instrument_approach_category":
+            "aircraft_design_group": 
+        }
+    },
+    "notams": [
+        {
+            "title":
+            "notam_id":
+            "q":
+            "a":
+            "b":
+            "c":
+            "d":
+            "e":
+            "f":
+            "g":
+        }
+        ...
+    ]
+}
+
+Model output:
+
+from typing import List
+from pydantic import BaseModel
+
+class NotamResult(BaseModel):
+    notam_id: str
+    classification: int
+    summary: str
+
+class AnalysisOutput(BaseModel):
+
+
+{
+    [
+        {
+            "notam_id": "C1234/56",
+            "classification": 1,
+            "summary": "TAXYWAY A2 CLOSED DUE TO TARMAC DEGREDATION"
+        },
+        {
+            "notam_id": "D1234/56",
+            "classification": 1,
+            "summary": "RUNWAY 02L HAS AN INCREASED BIRD RISK BETWEEN 8AM AND 11AM"
+        }
+    ]
+}

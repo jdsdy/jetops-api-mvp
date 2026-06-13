@@ -1,0 +1,531 @@
+[
+  {
+    "pdf": "Briefing: YBBN - RJTT (created Apr 19 07:02:56Z).pdf",
+    "notams": [
+      {
+        "notam_id": "C0481/26 NOTAMN",
+        "title": "TAXIWAY CLOSED (NEW TODAY)",
+        "q": "YBBB/QMXLC/IV/BO/A/000/999/2723S15307E005",
+        "a": "YBBN",
+        "b": "2604191200",
+        "c": "2604191900",
+        "d": null,
+        "e": "TWY B2 CLSD {\\n} TWY B BTN TWY F1 AND TWY Z CLSD {\\n} TWY F2 BTN TWY B AND G1 CLSD",
+        "f": null,
+        "g": null
+      },
+      {
+        "notam_id": "C0478/26 NOTAMN",
+        "title": "AERODROME CONCENTRATION OF BIRDS",
+        "q": "YBBB/QFAHX/IV/NBO/A/000/999/2723S15307E005",
+        "a": "YBBN",
+        "b": "2604170011",
+        "c": "2604220748",
+        "d": "HJ",
+        "e": "INCREASED BIRD HAZARD (WELCOME SWALLOW) IN VCY RWY 01L/19R",
+        "f": null,
+        "g": null
+      },
+      {
+        "notam_id": "C0470/26 NOTAMN",
+        "title": "AERODROME",
+        "q": "YBBB/QFAXX/IV/NBO/A/000/999/2723S15307E005",
+        "a": "YBBN",
+        "b": "2604140414",
+        "c": "PERM",
+        "d": null,
+        "e": "CHARTS RELATED TO THE AERODROME {\\n} AMD CHANGE THE FLW: {\\n} 2. AERODROME OBSTRUCTION CHART TYPE A CHART: RWY 01R/19L - 24TH {\\n} EDITION (APR 2026) {\\n} 3. AERODROME OBSTRUCTION CHART TYPE A CHART: RWY 01L/19R - 9TH {\\n} EDITION (APR 2026) {\\n} 4. AERODROME OBSTRUCTION CHART TYPE B CHART: ISSUED APRIL 2026 {\\n} AMD ENR SUP AUSTRALIA (ERSA",
+        "f": null,
+        "g": null
+      },
+      {
+        "notam_id": "C0450/26 NOTAMN",
+        "title": "PARKING AREA PRKG LIMITED TO",
+        "q": "YBBB/QMKLT/IV/M/A/000/999/2723S15307E005",
+        "a": "YBBN",
+        "b": "2604082008",
+        "c": "2607030800 EST",
+        "d": null,
+        "e": "LOCAL TRAFFIC REGULATIONS AMD {\\n} CHANGE THE FLW: {\\n} 10. APN AND TWY AVAILABILITY AND RESTRICTIONS {\\n} G. AIRPORT SOUTH PARKING APRON PARKING POSTION P1 TO PARKING POSITION {\\n} P11 MAX CODE C ACFT (B737, Q400 AND A320) AVBL H24 UNDER TOW ONLY",
+        "f": null,
+        "g": null
+      },
+      {
+        "notam_id": "C0432/26 NOTAMN",
+        "title": "TAXIWAY CLOSED",
+        "q": "YBBB/QMXLC/IV/BO/A/000/999/2723S15307E005",
+        "a": "YBBN",
+        "b": "2604080330",
+        "c": "2607030800",
+        "d": null,
+        "e": "TWY C12 CLSD EXC ACFT UNDER TOW HJ",
+        "f": null,
+        "g": null
+      },
+      {
+        "notam_id": "C0389/26 NOTAMN",
+        "title": "INSTRUMENT APPROACH PROCEDURE CHANGED",
+        "q": "YBBB/QPICH/I/NBO/A/000/999/2723S15307E005",
+        "a": "YBBN",
+        "b": "2603260309",
+        "c": "PERM",
+        "d": null,
+        "e": "AIP DEP AND APCH (DAP) AMD {\\n} CIRCLING MINIMA CAT A-B 660 (645-2.4) {\\n} ALTERNATE CAT A-B (1145-4.4",
+        "f": null,
+        "g": null
+      },
+      {
+        "notam_id": "C0314/26 NOTAMN",
+        "title": "TAXIWAY",
+        "q": "YBBB/QMXXX/IV/M/A/000/999/2723S15307E005",
+        "a": "YBBN",
+        "b": "2603122057",
+        "c": "PERM",
+        "d": null,
+        "e": "APRONS AND TAXIWAYS AMD {\\n} CHANGE THE FLW: {\\n} 1. TAXILANE FM LOGISTIC APN TO BRENZIL HANGAR AND FBO RATED: {\\n} PCR 280/F/D/X/U {\\n} NO ACFT PARKING OR TAXING OUTSIDE LICENCE AREA {\\n} AMD ENR SUP AUSTRALIA (ERSA",
+        "f": null,
+        "g": null
+      },
+      {
+        "notam_id": "HNL 04/227",
+        "title": "NAVIGATION",
+        "q": null,
+        "a": null,
+        "b": "2604180306",
+        "c": "2604302359EST",
+        "d": null,
+        "e": "TKK NAV NDB U/S",
+        "f": null,
+        "g": null
+      },
+      {
+        "notam_id": "HNL 02/304",
+        "title": "NAVIGATION",
+        "q": null,
+        "a": null,
+        "b": "2602261029",
+        "c": "2612312359EST",
+        "d": null,
+        "e": "PNI NAV NDB U/S",
+        "f": null,
+        "g": null
+      },
+      {
+        "notam_id": "SUAW 04/616",
+        "title": "AIRSPACE",
+        "q": null,
+        "a": null,
+        "b": "2604191300",
+        "c": "2604201300",
+        "d": null,
+        "e": "ZAK AIRSPACE W291E ACT",
+        "f": "SFC",
+        "g": "FL500"
+      },
+      {
+        "notam_id": "FDC 6/5486",
+        "title": "ROUTE",
+        "q": null,
+        "a": null,
+        "b": "2601211455",
+        "c": "2801211455EST",
+        "d": null,
+        "e": "ZAK AK..ROUTE ZAK. V301 FAIRBANKS (FAI) VORTAC, AK R-355 TO FORT YUKON (FYU) {\\n} VORTAC, AK R-209 NA EXCEPT FOR ACFT EQUIPPED WITH SUITABLE RNAV SYSTEM WITH GPS. FYU VOR {\\n} UNUSABLE BEYOND 15NM.",
+        "f": null,
+        "g": null
+      },
+      {
+        "notam_id": "M0028/26 NOTAMR M0314/25",
+        "title": "TEMPORARY RESTRICTED AREA ACTIVATED",
+        "q": "ZAK/QXXXX/IV/NBO/A/000/999/0923N16728E005",
+        "a": "PKRO",
+        "b": "2602280918",
+        "c": "2605022359",
+        "d": null,
+        "e": "AVOID OVERFLIGHT OF ISLAND WITHIN 10NM SURFACE TO 50,000FT DUE TO {\\n} ELECTROMAGNETIC RADIATION HAZARD",
+        "f": null,
+        "g": null
+      }
+    ]
+  },
+  {
+    "pdf": "Briefing: YSSY - YBBN (created Apr 14 01:10:42Z).pdf",
+    "notams": [
+      {
+        "notam_id": "C4550/25 NOTAMR C4549/25",
+        "title": "AERODROME",
+        "q": "YMMM/QFAXX/IV/NBO/A/000/999/3357S15111E005",
+        "a": "YSSY",
+        "b": "2512180156",
+        "c": "PERM",
+        "d": null,
+        "e": "HANDLING SERVICES AND FACILITIES AMD {\\n} REMOVE THE FLW: {\\n} JET AVIATION AUSTRALIA - FBO SERVICES AND VIP LOUNGE H24. CIVIL AND {\\n} MIL ACFT. {\\n} PH OPS +61 2 9708 8775 H24. EMAIL: SYDFBO(AT)JETAVIATION.COM, VHF {\\n} 135.95. CS 'JET AVIATION' {\\n} AMD ENR SUP AUSTRALIA (ERSA",
+        "f": null,
+        "g": null
+      },
+      {
+        "notam_id": "C1207/26 NOTAMR C1097/26",
+        "title": "OBSTACLE ERECTED",
+        "q": "YMMM/QOBCE/IV/M/AE/000/999/3357S15111E005",
+        "a": "YSSY",
+        "b": "2604111653",
+        "c": "2604300000 EST",
+        "d": null,
+        "e": "OBSTACLE CRANES AT FLW LOCATIONS ERECTED 190FT AMSL BRG 002 MAG 2444M FM ARP {\\n} 904FT AMSL BRG 003 MAG 5.28NM FM ARP {\\n} 656FT AMSL BRG 003 MAG 5.19NM FM ARP {\\n} 1025FT AMSL BRG 003 MAG 5.23NM FM ARP {\\n} 276FT AMSL BRG 004 MAG 2.84NM FM ARP {\\n} 804FT AMSL BRG 005 MAG 4.75NM FM ARP {\\n} 901FT AMSL BRG 006 MAG 3.98NM FM ARP {\\n} 614FT AMSL BRG 006 MAG 4.17NM FM ARP {\\n} 682FT AMSL BRG 006 MAG 4.77NM FM ARP {\\n} 587FT AMSL BRG 006 MAG 4.97NM FM ARP OBST UNLIT {\\n} 797FT AMSL BRG 006 MAG 4.64NM FM ARP {\\n} 837FT AMSL BRG 006 MAG 4.68NM FM ARP {\\n} 906FT AMSL BRG 006 MAG 5.09NM FM ARP {\\n} 614FT AMSL BRG 007 MAG 4.42NM FM ARP {\\n} 213FT AMSL BRG 009 MAG 2800M FM ARP {\\n} 315FT AMSL BRG 012 MAG 2.86NM FM ARP {\\n} 392FT AMSL BRG 016 MAG 3.23NM FM ARP {\\n} 364FT AMSL BRG 017 MAG 2.97NM FM ARP {\\n} 284FT AMSL BRG 017 MAG 3159M FM ARP {\\n} 412FT AMSL BRG 019 MAG 3.17NM FM ARP {\\n} 296FT AMSL BRG 023 MAG 2.79NM FM ARP {\\n} 413FT AMSL BRG 025 MAG 2.75NM FM ARP {\\n} 413FT AMSL BRG 033 MAG 3.18NM FM ARP {\\n} 548FT AMSL BRG 035 MAG 4.82NM FM ARP {\\n} 532FT AMSL BRG 036 MAG 4.88NM FM ARP {\\n} 348FT AMSL BRG 045 MAG 2.87NM FM ARP {\\n} 292FT AMSL BRG 050 MAG 3.33NM FM ARP {\\n} 243FT AMSL BRG 070 MAG 2.51NM FM ARP {\\n} 282FT AMSL BRG 070 MAG 2.48NM FM ARP {\\n} 230FT AMSL BRG 226 MAG 3443M FM ARP {\\n} 256FT AMSL BRG 228 MAG 2.69NM FM ARP {\\n} 311FT AMSL BRG 230 MAG 2.21NM FM ARP {\\n} 342FT AMSL BRG 233 MAG 2.26NM FM ARP {\\n} 438FT AMSL BRG 234 MAG 3.55NM FM ARP {\\n} 200FT AMSL BRG 273 MAG 2610M FM ARP {\\n} 324FT AMSL BRG 273 MAG 2903M FM ARP {\\n} 204FT AMSL BRG 286 MAG 2430M FM ARP {\\n} 164FT AMSL BRG 340 MAG 3674M FM ARP {\\n} 714FT AMSL BRG 349 MAG 7.68NM FM ARP {\\n} 367FT AMSL BRG 352 MAG 3.45NM FM ARP {\\n} 416FT AMSL BRG 353 MAG 3.39NM FM ARP {\\n} 426FT AMSL BRG 353 MAG 3.42NM FM ARP {\\n} 574FT AMSL",
+        "f": null,
+        "g": null
+      },
+      {
+        "notam_id": "C1161/26 NOTAMN",
+        "title": "RUNWAY CLOSED (NEW TODAY)",
+        "q": "YMMM/QMRLC/IV/NBO/A/000/999/3357S15111E005",
+        "a": "YSSY",
+        "b": "2604191900",
+        "c": "2604250700",
+        "d": "DAILY 1900-0700",
+        "e": "RWY 07/25 CLSD EXC WITH 40MIN PN {\\n} ACFT TAXIING PERMITTED {\\n} RWY WILL BE MADE AVBL WHEN REQUIRED TO FACILITATEO PERATIONAL {\\n} REQUIREMENTS AND NOISE SHARING OPERATIONS {\\n} REFER METHOD OF WORKING PLAN 25/001",
+        "f": null,
+        "g": null
+      },
+      {
+        "notam_id": "C1120/26 NOTAMN",
+        "title": "TAXIWAY",
+        "q": "YMMM/QMXXX/IV/M/A/000/999/3357S15111E005",
+        "a": "YSSY",
+        "b": "2604020022",
+        "c": "PERM",
+        "d": null,
+        "e": "LOCAL TRAFFIC REGULATIONS AMD {\\n} CHANGE THE FLW: {\\n} NOTE 9. B777-300/ER AND A350-1000 OPR RESTRICTIONS. RWY 16L/34R IS {\\n} AVBL {\\n} ADD NEW NOTE B. {\\n} ADDITIONAL TAXIWAY ROUTES {\\n} (I)TWY D {\\n} (II)TWY J {\\n} (III)TWY K BTN TWY B AND TWY D {\\n} (IV)TWY B BTN TWY G AND TWY K {\\n} (V)TWY C BTN TWY G AND TWY K {\\n} AMD ENR SUPPLEMENT AUSTRALIA (ERSA",
+        "f": null,
+        "g": null
+      },
+      {
+        "notam_id": "C1076/26 NOTAMN",
+        "title": "INSTRUMENT APPROACH PROCEDURE LIMITED TO",
+        "q": "YMMM/QPILT/I/NBO/A/000/999/3357S15111E005",
+        "a": "YSSY",
+        "b": "2603311300",
+        "c": "2606301300 EST",
+        "d": null,
+        "e": "AIP DEP AND APCH (DAP) AMD {\\n} RNP RWY 07 LNAV/VNAV MINIMA CAT A-D 580 (564-3.2) {\\n} RNP RWY 07 LNAV MINIMA CAT A-D 660 (644-3.7) {\\n} ILS RWY 34L MISSED APCH TURN ALT 600FT VICE 500FT {\\n} GLS RWY 34L MISSED APCH TURN ALT 600FT VICE 500FT {\\n} LOC RWY 34L MISSED APCH TURN ALT 600FT VICE 500FT {\\n} RNP RWY 34L MISSED APCH TURN ALT 600FT VICE 500FT {\\n} DUE CRANE PUBLISHED IN SEPARATE NOTAM",
+        "f": null,
+        "g": null
+      }
+    ]
+  },
+  {
+    "pdf": "Briefing: YSSY - YPPH (created Apr 14 01:22:14Z).pdf",
+    "notams": [
+      {
+        "notam_id": "C4550/25 NOTAMR C4549/25",
+        "title": "AERODROME",
+        "q": "YMMM/QFAXX/IV/NBO/A/000/999/3357S15111E005",
+        "a": "YSSY",
+        "b": "2512180156",
+        "c": "PERM",
+        "d": null,
+        "e": "HANDLING SERVICES AND FACILITIES AMD {\\n} REMOVE THE FLW: {\\n} JET AVIATION AUSTRALIA - FBO SERVICES AND VIP LOUNGE H24. CIVIL AND {\\n} MIL ACFT. {\\n} PH OPS +61 2 9708 8775 H24. EMAIL: SYDFBO(AT)JETAVIATION.COM, VHF {\\n} 135.95. CS 'JET AVIATION' {\\n} AMD ENR SUP AUSTRALIA (ERSA",
+        "f": null,
+        "g": null
+      },
+      {
+        "notam_id": "C1229/26 NOTAMN",
+        "title": "TAXIWAY CLOSED (NEW TODAY)",
+        "q": "YMMM/QMXLC/IV/BO/A/000/999/3357S15111E005",
+        "a": "YSSY",
+        "b": "2604151300",
+        "c": "2604151900",
+        "d": null,
+        "e": "TWY DOM 1 BTN TWY C AND BAY 9 CLSD DUE WIP {\\n} REFER METHOD OF WORKING PLAN 24/002",
+        "f": null,
+        "g": null
+      },
+      {
+        "notam_id": "C1160/26 NOTAMN",
+        "title": "RUNWAY CLOSED (NEW TODAY)",
+        "q": "YMMM/QMRLC/IV/NBO/A/000/999/3357S15111E005",
+        "a": "YSSY",
+        "b": "2604141900",
+        "c": "2604150700",
+        "d": null,
+        "e": "RWY 07/25 CLSD EXC WITH 40MIN PN {\\n} ACFT TAXIING PERMITTED {\\n} RWY WILL BE MADE AVBL WHEN REQUIRED TO FACILITATE OPERATIONAL {\\n} REQUIREMENTS AND NOISE SHARING OPERATIONS {\\n} REFER METHOD OF WORKING PLAN 25/001",
+        "f": null,
+        "g": null
+      },
+      {
+        "notam_id": "C1118/26 NOTAMN",
+        "title": "UNMANNED AIRCRAFT WILL TAKE PLACE",
+        "q": "YMMM/QWULW/IV/BO/AW/000/002/3357S15111E005",
+        "a": "YSSY",
+        "b": "2604061900",
+        "c": "2604190800",
+        "d": "HJ",
+        "e": "UA OPS (MULTI-ROTOR 25KG) WILL TAKE PLACE {\\n} OP WI 100M RADIUS OF PSN 335428.75S 1511053.97E {\\n} BRG 352 MAG 2.3NM FM ARP {\\n} OPR WILL MNT TWR FREQ 120.5 OR 124.7 {\\n} OPR CTC TEL: 0415 462 707",
+        "f": "SFC",
+        "g": "125FT AGL"
+      },
+      {
+        "notam_id": "C0935/26 NOTAMN",
+        "title": "MODEL FLYING WILL TAKE PLACE (NEW TODAY)",
+        "q": "YMMM/QWZLW/IV/M/W/000/010/3351S15113E001",
+        "a": "YMMM",
+        "b": "2604151045",
+        "c": "2604151115",
+        "d": null,
+        "e": "FIREWORKS DISPLAY WILL TAKE PLACE {\\n} PSN 335134S 1511309E 'FARM COVE, SYDNEY HARBOUR' {\\n} BRG 009 MAG 5.7NM FM SYDNEY AD (YSSY) {\\n} OPR CTC TEL: 0418 411 839",
+        "f": "SFC",
+        "g": "920FT AMSL"
+      },
+      {
+        "notam_id": "C0725/26 NOTAMN",
+        "title": "RESTRICTED AREA ACTIVATED",
+        "q": "YMMM/QRRCA/IV/BO/W/000/020/3145S11606E008",
+        "a": "PEX",
+        "b": "2604130000",
+        "c": "2604170900",
+        "d": "2604130000 TO 2604130900 {\\n} 2604140000 TO 2604140900 {\\n} 2604150000 TO 2604150900 {\\n} 2604160000 TO 2604160900 {\\n} 2604170000 TO 2604170900",
+        "e": "R153A ACT (RA2) DUE MIL FLYING",
+        "f": "SFC",
+        "g": "2000FT AMSL"
+      },
+      {
+        "notam_id": "C0436/26 NOTAMN",
+        "title": "UNMANNED AIRCRAFT WILL TAKE PLACE",
+        "q": "YMMM/QWULW/IV/BO/AW/000/001/3357S15111E005",
+        "a": "YSSY",
+        "b": "2602131900",
+        "c": "2605100900",
+        "d": "DAILY 1900-0900",
+        "e": "UA OPS (MULTI-ROTOR BLW 2KG) WILL TAKE PLACE {\\n} OPR WI 25M EITHER SIDE OF A LINE BTN: {\\n} PSN 335346.6S 1511132.6E BRG 018 MAG 2.7NM FM ARP AND {\\n} PSN 335344.6S 1511139.3E BRG 018 MAG 2.7NM FM ARP {\\n} OPR WILL MNT TWR FREQ 120.5 {\\n} OPR CTC TEL: 0402 908 816 OR 0438 777 067",
+        "f": "SFC",
+        "g": "100FT AGL"
+      }
+    ]
+  },
+  {
+    "pdf": "Specific Pre-Flight Information Bulletin.pdf",
+    "notams": [
+      {
+        "notam_id": "G5/26",
+        "title": null,
+        "q": null,
+        "a": "YBBB/YMMM",
+        "b": "2602180155",
+        "c": "PERM",
+        "d": null,
+        "e": "DESIGNATED AIRSPACE HANDBOOK (DAH) AND AIP CHARTS EFFECTIVE 27 {\\n} NOVEMBER 2025 AIRAC AMD {\\n} CHANGE THE FLW: {\\n} NEXT ISSUE EFFECTIVE DATE 09 JULY 2026 AIRAC (202607081600UTC)",
+        "f": null,
+        "g": null
+      },
+      {
+        "notam_id": "H4489/26",
+        "title": null,
+        "q": null,
+        "a": "YSSY",
+        "b": "2606041300",
+        "c": "2606051900",
+        "d": "DAILY 1300-1900",
+        "e": "TWY C BTN TWY K AND TWY B8 CLSD DUE WIP {\\n} REFER METHOD OF WORKING PLAN 24/002",
+        "f": null,
+        "g": null
+      },
+      {
+        "notam_id": "F2011/26",
+        "title": null,
+        "q": null,
+        "a": "YSSY",
+        "b": "2606010610",
+        "c": "2608280000",
+        "d": "HJ",
+        "e": "UA OPS WILL TAKE PLACE WI 3NM RADIUS OF ARP {\\n} REMOTELY PILOTED ACFT SYSTEM (RPAS) ACTIVITY ASSOCIATED WITH TRIAL {\\n} CTC CIVIL AVIATION SAFETY AUTHORITY (CASA) VIA TEL: +61 3 9518 2736",
+        "f": "SFC",
+        "g": "400FT AGL"
+      },
+      {
+        "notam_id": "H4365/26",
+        "title": null,
+        "q": null,
+        "a": "YSSY",
+        "b": "2606051300",
+        "c": "2606061900",
+        "d": "DAILY 1300-1900",
+        "e": "ILS GP 'IKN' 332 RWY 34R U/S",
+        "f": null,
+        "g": null
+      },
+      {
+        "notam_id": "H4483/26 REPLACE H2971/26",
+        "title": null,
+        "q": null,
+        "a": "YSRI",
+        "b": "2606030027",
+        "c": "2609010000 EST",
+        "d": null,
+        "e": "OBST TREE 103FT AMSL ERECTED {\\n} PSN 333631.69S 1504754.37E {\\n} BRG 095 MAG 1.4NM FM START OF TKOF RWY10 {\\n} INFRINGES TKOF RWY10 BY 21FT",
+        "f": null,
+        "g": null
+      },
+      {
+        "notam_id": "J2544/26",
+        "title": null,
+        "q": null,
+        "a": "YPTN",
+        "b": "2606020238",
+        "c": "PERM",
+        "d": null,
+        "e": "RWY THR DATA AMD {\\n} BRG(T) RWY LAT LONG ELEV {\\n} 138.90 14 143028.91S 1322154.53E 427FT {\\n} 318.90 32 143151.10S 1322308.13E 443FT {\\n} AMD DESIGNATED AIRSPACE HANDBOOK (DAH) AND DEP AND APCH PROC (DAP)",
+        "f": null,
+        "g": null
+      },
+      {
+        "notam_id": "J2256/26 REPLACE J2071/26",
+        "title": null,
+        "q": null,
+        "a": "YPTN",
+        "b": "2605170649",
+        "c": "2606082030 EST",
+        "d": "DAILY 0830-2030",
+        "e": "RWY 14/32 WIP {\\n} WORKERS AND EQPT WILL VACATE WITH 30MIN PN {\\n} CTC ATC OR WORKS SAFETY OFFICER ON COMMON TFC ADVISORY FREQ (CTAF) {\\n} 119.7 OR VIA TEL: 0499 878 633",
+        "f": null,
+        "g": null
+      },
+      {
+        "notam_id": "E1899/26",
+        "title": null,
+        "q": null,
+        "a": "YMMM",
+        "b": "2605200434",
+        "c": "2608152359",
+        "d": null,
+        "e": "TEMPO RESTRICTED AREA ACT {\\n} WI 110M RADIUS OF PSN 351838.5S 1490701.2E {\\n} NO FLT OF RPA OR MODEL ACFT PERMITTED WO PERMISSION OF CONTROLLING {\\n} AUTHORITY AUSTRALIAN FEDERAL POLICE AERIAL RESPONSE TEAM {\\n} CTC VIA TEL: 0499 938 819",
+        "f": "SFC",
+        "g": "400FT AGL"
+      }
+    ]
+  },
+  {
+    "pdf": "2026-06-10 14-48AWST YPPH-YBRM OZ-NEW.pdf",
+    "notams": [
+      {
+        "notam_id": "C138/26",
+        "title": null,
+        "q": null,
+        "a": "YPJT",
+        "b": "2606020120",
+        "c": "2606300600 EST",
+        "d": null,
+        "e": "NDB 'JT' 281 PILOT MNT",
+        "f": null,
+        "g": null
+      },
+      {
+        "notam_id": "C124/26",
+        "title": null,
+        "q": null,
+        "a": "YPJT",
+        "b": "2605052300",
+        "c": "2607310900",
+        "d": null,
+        "e": "8 OBST TOWER CRANES (LIT) 385FT AMSL ERECTED {\\n} OPR WI AN AREA BOUNDED BY: {\\n} PSN 320416.91S 1155049.93E BRG 312 MAG 2.43NM FM ARP {\\n} PSN 320416.75S 1155057.80E BRG 313 MAG 2.26NM FM ARP {\\n} PSN 320423.57S 1155050.02E BRG 309 MAG 2.26NM FM ARP {\\n} PSN 320423.69E 1155056.75E BRG 311 MAG 2.19NM FM ARP {\\n} INFRINGES OUTER HORIZONTAL SFC BY 97FT",
+        "f": null,
+        "g": null
+      },
+      {
+        "notam_id": "C412/26",
+        "title": null,
+        "q": null,
+        "a": "YPPH",
+        "b": "2606082300",
+        "c": "2606100800",
+        "d": "DAILY 2300-0800",
+        "e": "LINK 8 CL LGT U/S",
+        "f": null,
+        "g": null
+      },
+      {
+        "notam_id": "C437/26",
+        "title": null,
+        "q": null,
+        "a": "YPPH",
+        "b": "2606100158",
+        "c": "2608220900",
+        "d": "MON-FRI 2300-0900",
+        "e": "UA OPS (MULTI-ROTOR BLW 25KG) WILL TAKE PLACE {\\n} OPR WI 750M EITHER SIDE OF A LINE BTN {\\n} PSN 315841S 1155819E BRG 173 MAG 2.28NM FM ARP AND {\\n} PSN 315602S 1155915E BRG 070 MAG 2063M FM ARP {\\n} OPR WILL MNT TWR FREQ 127.4 {\\n} OPR CTC TEL: 0432 213 304",
+        "f": "SFC",
+        "g": "210FT AMSL"
+      },
+      {
+        "notam_id": "C373/26 REPLACE C113/26",
+        "title": null,
+        "q": null,
+        "a": "YPPH",
+        "b": "2605150339",
+        "c": "2607151000 EST",
+        "d": "HJ",
+        "e": "LOC 'IGD' 109.5 RWY 21 SUBJ TO INTRP {\\n} POSSIBLE SIGNAL OSCILLATIONS ON 'PH21' LOCALISER ALONG THE APCH {\\n} PATH {\\n} DUE CRANE OPS AT TERMINAL 2",
+        "f": null,
+        "g": null
+      },
+      {
+        "notam_id": "C1141/26 REPLACE C1135/26",
+        "title": null,
+        "q": null,
+        "a": "PEX",
+        "b": "2606090000",
+        "c": "2606120900",
+        "d": "2606090000 TO 2606090900 {\\n} 2606100000 TO 2606100900 {\\n} 2606110000 TO 2606110900 {\\n} 2606120000 TO 2606120900",
+        "e": "R153A ACT (RA2) DUE MIL FLYING",
+        "f": "SFC",
+        "g": "2000FT AMSL"
+      },
+      {
+        "notam_id": "C1646/25",
+        "title": null,
+        "q": null,
+        "a": "YMMM",
+        "b": "2607240214",
+        "c": "PERM",
+        "d": null,
+        "e": "AIP CHARTS AMD {\\n} ADD THE FLW {\\n} ADD: LIT MET MAST 2415FT AMSL PSN 233057S 1200548E",
+        "f": null,
+        "g": null
+      },
+      {
+        "notam_id": "B178/26 REPLACE B177/26",
+        "title": null,
+        "q": null,
+        "a": "YMMM/YBBB",
+        "b": "2605300413",
+        "c": "2606191400 EST",
+        "d": null,
+        "e": "VOLMET 'DERBY' 128.45 U/S",
+        "f": null,
+        "g": null
+      },
+      {
+        "notam_id": "C1525/26",
+        "title": null,
+        "q": null,
+        "a": "YMMM/YBBB",
+        "b": "2606010000",
+        "c": "2606150000",
+        "d": null,
+        "e": "TRIGGER NOTAM AIC H25/26 {\\n} RETIREMENT OF ROUTE SECTOR WIND TEMPERATURE FORECAST PRODUCT {\\n} AVBL FM AIRSERVICES WEBSITE {\\n} WWW.AIRSERVICESAUSTRALIA.COM/AIP/AIP.ASP",
+        "f": null,
+        "g": null
+      },
+      {
+        "notam_id": "C33/26",
+        "title": null,
+        "q": null,
+        "a": "YMEK",
+        "b": "2605080808",
+        "c": "PERM",
+        "d": null,
+        "e": "DECLARED DISTANCE AND GRADIENT CHANGES {\\n} RWY TODA {\\n} 27 2241(2.04) {\\n} 15 1125(1.35) {\\n} SUPPLEMENTARY TKOF DISTANCES {\\n} RWY27- 2161(1.6) 2221(1.9) {\\n} AMD ENR SUPPLEMENT AUSTRALIA (ERSA)",
+        "f": null,
+        "g": null
+      }
+    ]
+  }
+]
