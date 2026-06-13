@@ -1,3 +1,4 @@
+import json
 from datetime import datetime
 from uuid import UUID
 
@@ -59,32 +60,69 @@ def _build_airfield(
     )
 
 
+def _parse_custom_data(value: object | None) -> dict | None:
+    if value is None:
+        return None
+    if isinstance(value, str):
+        try:
+            value = json.loads(value)
+        except json.JSONDecodeError:
+            return None
+    if not isinstance(value, dict) or not value:
+        return None
+    return value
+
+
+def _specs_from_aircraft_reference(reference: dict) -> dict[str, object | None]:
+    return {
+        "icao_wtc": reference.get("icao_wtc"),
+        "weight_class": reference.get("weight_class"),
+        "wingspan_ft": reference.get("wingspan_ft"),
+        "wingspan_m": reference.get("wingspan_m"),
+        "length_ft": reference.get("length_ft"),
+        "length_m": reference.get("length_m"),
+        "instrument_approach_category": reference.get("aac"),
+        "aircraft_design_group": reference.get("adc"),
+    }
+
+
+def _specs_from_custom_data(custom_data: dict) -> dict[str, object | None]:
+    return {
+        "icao_wtc": custom_data.get("icao_wtc"),
+        "weight_class": custom_data.get("weight_class"),
+        "wingspan_ft": custom_data.get("wingspan_ft"),
+        "wingspan_m": custom_data.get("wingspan_m"),
+        "length_ft": custom_data.get("length_ft"),
+        "length_m": custom_data.get("length_m"),
+        "instrument_approach_category": custom_data.get("aac"),
+        "aircraft_design_group": custom_data.get("adg"),
+    }
+
+
 def _build_aircraft(fleet: dict | None) -> AircraftContext:
     if not fleet:
         return AircraftContext()
 
     reference = fleet.get("aircraft_reference")
     if reference:
+        specs = _specs_from_aircraft_reference(reference)
         return AircraftContext(
             make=reference.get("manufacturer"),
             model=reference.get("model"),
             seats=fleet.get("seats"),
             rnav_equipped=fleet.get("rnav_equipped"),
-            icao_wtc=reference.get("icao_wtc"),
-            weight_class=reference.get("weight_class"),
-            wingspan_ft=reference.get("wingspan_ft"),
-            wingspan_m=reference.get("wingspan_m"),
-            length_ft=reference.get("length_ft"),
-            length_m=reference.get("length_m"),
-            instrument_approach_category=reference.get("aac"),
-            aircraft_design_group=reference.get("adc"),
+            **specs,
         )
+
+    custom_data = _parse_custom_data(fleet.get("custom_data"))
+    specs = _specs_from_custom_data(custom_data) if custom_data else {}
 
     return AircraftContext(
         make=fleet.get("manufacturer"),
         model=fleet.get("model"),
         seats=fleet.get("seats"),
         rnav_equipped=fleet.get("rnav_equipped"),
+        **specs,
     )
 
 

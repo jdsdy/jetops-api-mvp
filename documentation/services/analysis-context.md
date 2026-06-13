@@ -19,12 +19,12 @@ See also: [Begin analysis (debug)](../endpoints/v1-jobs-begin-analysis.md).
 | `alternate_airfield_icao` | `flight_plans.alt_icao` |
 | `planned_dept_time` / `planned_arr_time` | `flight_plans` |
 | `route`, `cruise_level` | `flight_plans` |
-| `aircraft` | `fleet_aircraft` + optional `aircraft_reference` |
+| `aircraft` | `fleet_aircraft` + optional `aircraft_reference`, or `fleet_aircraft.custom_data` when reference is null |
 | `notams` | `raw_notams` |
 
 Runway dimensions are selected when `dept_rwy` / `arr_rwy` matches `le_ident` or `he_ident` on a runway row (case-insensitive). If no match, `icao` and `rwy` are still set; reference fields are null.
 
-When `fleet_aircraft.aircraft_ref_id` is null, aircraft `make` / `model` come from `fleet_aircraft`; reference-only fields (`wingspan_*`, `icao_wtc`, `adc`, `aac`, etc.) are null.
+When `fleet_aircraft.aircraft_ref_id` is null, aircraft `make` / `model` come from `fleet_aircraft`; reference fields come from `fleet_aircraft.custom_data` when present (`aac` → instrument approach category, `adg` → aircraft design group). If `custom_data` is also absent, those fields are null.
 
 ## Module layout
 

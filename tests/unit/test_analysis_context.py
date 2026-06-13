@@ -106,6 +106,7 @@ def test_build_aircraft_falls_back_to_fleet_without_reference() -> None:
         "seats": 6,
         "rnav_equipped": False,
         "aircraft_reference": None,
+        "custom_data": None,
     }
     aircraft = _build_aircraft(fleet)
     assert aircraft.make == "Fleet Mfr"
@@ -113,6 +114,73 @@ def test_build_aircraft_falls_back_to_fleet_without_reference() -> None:
     assert aircraft.seats == 6
     assert aircraft.wingspan_ft is None
     assert aircraft.icao_wtc is None
+
+
+def test_build_aircraft_uses_custom_data_when_reference_missing() -> None:
+    fleet = {
+        "manufacturer": "Fleet Mfr",
+        "model": "Fleet Model",
+        "seats": 6,
+        "rnav_equipped": True,
+        "aircraft_reference": None,
+        "custom_data": {
+            "icao_wtc": "M",
+            "weight_class": "Medium",
+            "wingspan_ft": 94.0,
+            "length_ft": 99.0,
+            "wingspan_m": 28.7,
+            "length_m": 30.2,
+            "aac": "D",
+            "adg": "C",
+        },
+    }
+
+    aircraft = _build_aircraft(fleet)
+
+    assert aircraft.make == "Fleet Mfr"
+    assert aircraft.model == "Fleet Model"
+    assert aircraft.seats == 6
+    assert aircraft.rnav_equipped is True
+    assert aircraft.icao_wtc == "M"
+    assert aircraft.weight_class == "Medium"
+    assert aircraft.wingspan_ft == 94.0
+    assert aircraft.length_ft == 99.0
+    assert aircraft.wingspan_m == 28.7
+    assert aircraft.length_m == 30.2
+    assert aircraft.instrument_approach_category == "D"
+    assert aircraft.aircraft_design_group == "C"
+
+
+def test_build_aircraft_prefers_reference_over_custom_data() -> None:
+    fleet = {
+        "manufacturer": "Fleet Mfr",
+        "model": "Fleet Model",
+        "seats": 6,
+        "rnav_equipped": True,
+        "aircraft_reference": {
+            "manufacturer": "Ref Mfr",
+            "model": "Ref Model",
+            "wingspan_ft": 80.0,
+            "wingspan_m": 24.0,
+            "length_ft": 70.0,
+            "length_m": 21.0,
+            "icao_wtc": "L",
+            "weight_class": "Small",
+            "adc": "III",
+            "aac": "C",
+        },
+        "custom_data": {
+            "icao_wtc": "M",
+            "adg": "C",
+        },
+    }
+
+    aircraft = _build_aircraft(fleet)
+
+    assert aircraft.make == "Ref Mfr"
+    assert aircraft.model == "Ref Model"
+    assert aircraft.icao_wtc == "L"
+    assert aircraft.aircraft_design_group == "III"
 
 
 def test_build_aircraft_all_null_when_no_fleet() -> None:

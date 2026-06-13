@@ -24,6 +24,7 @@ class AnalysisContextRepository:
                     rnav_equipped,
                     manufacturer,
                     model,
+                    custom_data,
                     aircraft_reference (
                         manufacturer,
                         model,

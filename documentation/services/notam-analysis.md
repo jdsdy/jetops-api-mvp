@@ -53,7 +53,7 @@ Structured output uses `client.messages.create()` with `output_config.format` (`
 **Full data found** rules:
 
 - Airfield: `iso_country` and `length_ft` both non-null (runway row matched).
-- Aircraft: `icao_wtc` non-null (linked `aircraft_reference` row).
+- Aircraft: `icao_wtc` non-null (linked `aircraft_reference` row or `fleet_aircraft.custom_data`).
 
 ## Persistence
 
