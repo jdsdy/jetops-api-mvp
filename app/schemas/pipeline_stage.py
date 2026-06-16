@@ -12,6 +12,7 @@ StageName = Literal[
     "pdf_extraction",
     "flight_data_parse",
     "notam_parse",
+    "notam_topic_classification",
     "build_context_object",
     "notam_analysis",
 ]
@@ -37,6 +38,13 @@ class NotamParseMetadata(BaseModel):
     multiformat_notams: bool
     parse_failures: int
     source_type: PlanSource
+
+
+class NotamTopicClassificationMetadata(BaseModel):
+    notams_classified: int
+    topic_counts: dict[str, int]
+    misc_count: int
+    classification_errors: int
 
 
 class BuildContextObjectMetadata(BaseModel):
@@ -117,6 +125,25 @@ def build_flight_parse_metadata(flight_data: FlightData) -> FlightDataParseMetad
         fields_extracted=extracted,
         fields_missing=missing,
         source_type=flight_data.source_app,
+    )
+
+
+def build_notam_topic_classification_metadata(
+    results: list[tuple[int, str, int]],
+    *,
+    classification_errors: int = 0,
+) -> NotamTopicClassificationMetadata:
+    topic_counts: dict[str, int] = {}
+    misc_count = 0
+    for _row_id, topic, _confidence in results:
+        topic_counts[topic] = topic_counts.get(topic, 0) + 1
+        if topic == "MISC":
+            misc_count += 1
+    return NotamTopicClassificationMetadata(
+        notams_classified=len(results),
+        topic_counts=topic_counts,
+        misc_count=misc_count,
+        classification_errors=classification_errors,
     )
 
 

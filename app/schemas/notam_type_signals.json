@@ -1,0 +1,293 @@
+{
+    "OBSTACLE": {
+        "strong": [
+            "OBST UNLIT",
+            "UNLIT OBST",
+            "OBSTACLE UNLIT",
+            "UNLIT OBSTACLE",
+            "UA OPS WILL TAKE PLACE",
+            "FIREWORK DISPLAY WILL TAKE PLACE",
+            "UNLIT MET MAST",
+            "OBST UNLIT MET MAST",
+            "OBSTACLE UNLIT MET MAST",
+            "OBST CHIMNEY STACK LGT",
+            "OBST CRANE MARKED",
+            "UNLIT BLDG",
+            "OBST CRANE",
+            "OBSTACLE CRANES",
+            "OBSTACLE CRANE MARKED",
+            "OBST CRANE (MARKED AND LIT)",
+            "OBSTACLE CRANE (MARKED AND LIT)",
+            "ADD: OBST",
+            "ADD: OBSTACLE"
+        ],
+        "moderate": [
+            "UA SWARM OPS",
+            "UNLIT TWR",
+            "OBST",
+            "OBSTACLE"
+        ],
+        "weak": [
+            "ERECTED",
+            "NM FM ARP",
+            "PSN",
+            "BRG"
+        ]
+    },
+    "AIRSPACE_ORGANISATION": {
+        "strong": [
+            "DESIGNTED AIRSPACE HANDBOOK"
+        ],
+        "moderate": [
+            ""
+        ],
+        "weak": [
+            "ROUTE"
+
+        ]
+    },
+    "PROCEDURE_GENERAL": {
+        "strong": [
+            "FLOW CONTROL CENTER",
+            "AREA CONTROLC CENTER",
+            "FLIGHT INFORMATION SERVICE",
+            "ATS REPORTING OFFICE"
+        ],
+        "moderate": [
+            "VOLMET"
+        ],
+        "weak": [
+            "ATIS"
+        ]
+    },
+    "AERODROME_GENERAL": {
+        "strong": [
+            "HANDLING SERVICES AND FACILITIES",
+            "FBO SERVICES",
+            "VIP LOUNGE",
+            "LOW LEVEL WINDSHEAR ALERT SYSTEM",
+            "INCREASED BIRD HAZARD",
+            "RESCUE AND FIREFIGHTING SERVICES",
+            "WATER RESCUE SERVICE",
+            "FIREFIGHTING SERVICE",
+            "ACFT DE-ICE",
+            "TRANSMISSOMOETER",
+            "SNOW REMOVAL",
+            "SN REMOVAL"
+        ],
+        "moderate": [
+            "FUEL AVBL",
+            "FUEL AVAILABILITY",
+            "WIND DIRECTION INDICATOR"
+        ],
+        "weak": [
+            "TEL:",
+            "EMAIL:",
+            "WDI"
+        ]
+    },
+    "COMMS": {
+        "strong": [
+            "SECONDARY SURVEILLANCE RADAR",
+            "EN-ROUTE SURVEILLANCE RADAR",
+            "SELECTIVE CALLING SYSTEM",
+            "SELCAL",
+            "SURFACE MOVEMENT RADAR",
+            "TERMINAL AREA SURVEILLANCE RADAR"
+        ],
+        "moderate": [
+            "RADAR COVERAGE"
+        ],
+        "weak": [
+            "ADS-B",
+            "ADS-C",
+            "TAR",
+            "SSR",
+            "SMR"
+        ]
+    },
+    "LIGHTING": {
+        "strong": [
+            "INTERMEDIATE HLDG POINT LGHT",
+            "CL LGT",
+            "HIGH INTST RWY LGT",
+            "HIGH INTENSITY RWY LGT",
+            "LDI LGT",
+            "AERODROME BEACON",
+            "APPROACH LIGHTING SYSTEM",
+            "ALS",
+            "ALL LANDING AERA LIGHTING FACILITIES",
+            "ALL LDG AREA LGT FAC",
+            "MEDIUM INTST RWY LGT",
+            "MEDIUM INTENSITY RWY LGT",
+            "STOPWAY LIGHTS",
+            "STOPWAY LGT",
+            "THRESHOLD LIGHTS",
+            "THRESHOLD LGT",
+            "TWY LGT",
+            "TWY CL LGT",
+            "EDGE LGT",
+            "TWY EDGE LGT"
+        ],
+        "moderate": [
+            "PAPI",
+            "HAPI",
+            "VASIS"
+        ],
+        "weak": [
+            "UNLIT",
+            "LGT"
+        ]
+    },
+    "GROUND_MOVEMENT": {
+        "strong": [
+            "TWY AVAILABILITY AND RESTRICTIONS",
+            "APN AVAILABILITY AND RESTRICTIONS",
+            "STOPBAR",
+            "STOP BAR",
+            "TWY",
+            "TAXIWAY",
+            "TAXILANE",
+            "ACFT STANDS",
+            "PARKING",
+            "MOVEMENT AREA",
+            "APRON",
+            "APRN"
+        ],
+        "moderate": [
+            "RWY TURNING BAY"
+        ],
+        "weak": [
+            "CLSD"
+        ]
+    },
+    "AIRSPACE": {
+        "strong": [
+            "DUE MIL FLYING",
+            "DUE MIL OPERATIONS",
+            "DUE MIL OPS",
+            "DUE MIL TRAINNIG",
+            "DUE MIL FLYING/NON-FLYING",
+            "ACT (RA2)",
+            "ACT DUE MIL",
+            "ACT (RA1)",
+            "DUE MIL FLYING AND NON FLYING",
+            "DUE MIL NON-FLYING"
+        ],
+        "moderate": [
+            "PILOT RESPONSIBILITY TO CK AND MNT STS",
+            "OTHER TIMES MAY BE ACTIVATED AT SHORT NOTICE",
+            "OCEANIC CONTROL AREA",
+            "TERMINAL CONTROL AREA"         
+        ],
+        "weak": [
+            "MIL",
+            "MILITARY"
+        ]
+    },
+    "NAVAID": {
+        "strong": [
+            "ALL RADIO NAV FAC",
+            "ALL RADIO NAV FACILITIES",
+            "ALL RADIO NAVIGATION FACILITIES"
+        ],
+        "moderate": [
+            "NDB",
+            "VOR/DME",
+            "TAC",
+            "TACAN",
+            "VOR",
+            "DME",
+            "VORTAC",
+            "OMEGA"
+        ],
+        "weak": [
+            "PILOT MNT",
+            "PILOT MONITORED",
+            "U/S"
+        ]
+    },
+    "APPROACH_PROCEDURE": {
+        "strong": [
+            "ILS RWY",
+            "ILS",
+            "ILS CAT A",
+            "ILS CAT B",
+            "ILS CAT C",
+            "ILS CAT D",
+            "ILS CAT E",
+            "ILS CAT I",
+            "ILS CAT II",
+            "ILS CAT III",
+            "LNAV/VNAV MINIMA",
+            "LNAV MINIMA",
+            "VNAV MINIMA",
+            "MISSED APCH TURN ALT",
+            "GLS RWY",
+            "LOC RWY",
+            "RNP RWY",
+            "DAP RWY",
+            "S-I ILS CAT",
+            "S-I ILS SA CAT",
+            "S-I GLS",
+            "S-I LOC",
+            "AIP DEP AND APCH",
+            "CIRCLING MINIMA",
+            "ALTERNATE MINIMA",
+            "GLIDESCOPE",
+            "GLIDE PATH",
+            "FALSE INDICATIONS POSSIBLE",
+            "AMD DEPARTURE AND APPROACH PROCEDURES",
+            "APCH PATH",
+            "MICROWAVE LANDING SYSTEM",
+            "MLS"
+        ],
+        "moderate": [
+            "MINIMA",
+            "APCH",
+            "APPROACH",
+            "MINIMUM SAFE ALTITUDE",
+            "DEG PROFILE",
+            "POSSIBLE SIGNAL OSCILLATIONS",
+            "APPROACH GRADIENT"
+        ],
+        "weak": [
+            "CAT",
+            "RWY",
+            "GRADIENT",
+            "PERCENT",
+            "U/S"
+        ]
+    },
+    "RUNWAY": {
+        "strong": [
+            "RWY",
+            "RUNWAY CLOSED",
+            "RWY CLSD",
+            "RUNWAY CLSD",
+            "RWY WILL BE MADE AVBL WHEN REQUIRED",
+            "DECLARED DISTANCE AND GRADIENT CHANGES",
+            "TORA",
+            "TODA",
+            "ASDA",
+            "LDA",
+            "RWY ENDS UNGROOVED",
+            "START OF TKOF THROUGH",
+            "RESA DIMENSIONS",
+            "RUNWAY DISTANCE SUPPLEMENT AMD",
+            "APPROACH GRADIENT",
+            "DECLARED DISTANCE"
+        ],
+        "moderate": [
+            "LOW FRICTION LEVEL",
+            "THRESHOLD",
+            "BEARING STRENGTH",
+            "GRADIENT CHANGE"
+        ],
+        "weak": [
+            "DUE WIP",
+            "CLSD",
+            "CLOSED"
+        ]
+    }
+}

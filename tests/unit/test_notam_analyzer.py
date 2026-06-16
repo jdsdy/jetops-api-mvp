@@ -13,11 +13,14 @@ from app.schemas.notam_analysis import (
 )
 from app.services.notam_analyzer import (
     ANALYSIS_OUTPUT_JSON_SCHEMA,
+    PLACEHOLDER_SYSTEM_PROMPT,
     _analyze_batch,
     _batch_result_outcome,
     _parse_analysis_response,
     analyze_notam_batches,
+    build_topic_batches,
     chunk_notam_batches,
+    group_notam_rows_by_topic,
     map_results_to_raw_notam_ids,
     merge_batch_results,
 )
@@ -36,8 +39,8 @@ def _flight_context() -> FlightContext:
     )
 
 
-def _notam_row(row_id: int, notam_id: str) -> AnalysisNotamRow:
-    return AnalysisNotamRow(id=row_id, notam_id=notam_id, e="Test NOTAM")
+def _notam_row(row_id: int, notam_id: str, *, topic: str | None = None) -> AnalysisNotamRow:
+    return AnalysisNotamRow(id=row_id, notam_id=notam_id, e="Test NOTAM", topic=topic)
 
 
 def test_chunk_notam_batches_splits_into_groups_of_ten() -> None:
@@ -121,7 +124,7 @@ def test_analyze_notam_batches_aggregates_tokens_and_detects_limit() -> None:
         BETA_SIGNUP_CODE="test-signup-code",
     )
 
-    def fake_analyze(batch, *, client, settings):
+    def fake_analyze(batch, *, client, settings, system_prompt=None):
         if batch.notams[0].id == 1:
             return (
                 [NotamResult(notam_id="C0481/26 NOTAMN", category=1, summary="A")],
@@ -172,7 +175,37 @@ def test_parse_analysis_response_validates_json_array() -> None:
     ]
 
 
-def test_analyze_batch_calls_messages_create_with_schema_and_caching() -> None:
+def test_group_notam_rows_by_topic_defaults_missing_to_misc() -> None:
+    rows = [
+        _notam_row(1, "N001/26", topic="RUNWAY"),
+        _notam_row(2, "N002/26"),
+    ]
+
+    grouped = group_notam_rows_by_topic(rows)
+
+    assert grouped["RUNWAY"] == [rows[0]]
+    assert grouped["MISC"] == [rows[1]]
+
+
+def test_build_topic_batches_chunks_each_topic_separately() -> None:
+    flight = _flight_context()
+    rows = [
+        _notam_row(i, f"N{i:03d}/26", topic="RUNWAY" if i <= 11 else "MISC")
+        for i in range(1, 14)
+    ]
+
+    batches = build_topic_batches(flight, rows, batch_size=10)
+
+    assert len(batches) == 3
+    assert batches[0].topic == "RUNWAY"
+    assert len(batches[0].notams) == 10
+    assert batches[1].topic == "RUNWAY"
+    assert len(batches[1].notams) == 1
+    assert batches[2].topic == "MISC"
+    assert len(batches[2].notams) == 2
+
+
+def test_analyze_batch_uses_misc_prompt_by_default() -> None:
     flight = _flight_context()
     batch = NotamBatchPayload(
         flight=flight,
@@ -215,7 +248,48 @@ def test_analyze_batch_calls_messages_create_with_schema_and_caching() -> None:
         },
         "effort": "low",
     }
+    assert call_kwargs["system"][0]["text"] == PLACEHOLDER_SYSTEM_PROMPT
     assert call_kwargs["system"][0]["cache_control"] == {"type": "ephemeral"}
+
+
+def test_analyze_batch_passes_custom_system_prompt() -> None:
+    flight = _flight_context()
+    batch = NotamBatchPayload(
+        flight=flight,
+        notams=[_notam_row(1, "C0481/26 NOTAMN")],
+        topic="RUNWAY",
+    )
+    settings = Settings(
+        API_KEY="k",
+        SUPABASE_URL="https://example.supabase.co",
+        SUPABASE_SECRET_KEY="s",
+        ANTHROPIC_API_KEY="a",
+        UPSTASH_REDIS_REST_URL="https://example.upstash.io",
+        UPSTASH_REDIS_REST_TOKEN="token",
+        BETA_SIGNUP_CODE="test-signup-code",
+    )
+    mock_text_block = MagicMock()
+    mock_text_block.type = "text"
+    mock_text_block.text = (
+        '[{"notam_id": "C0481/26 NOTAMN", "category": 1, "summary": "Runway"}]'
+    )
+    mock_response = MagicMock()
+    mock_response.content = [mock_text_block]
+    mock_response.usage.input_tokens = 10
+    mock_response.usage.output_tokens = 5
+    mock_client = MagicMock()
+    mock_client.messages.create.return_value = mock_response
+
+    custom_prompt = "Specialist runway prompt"
+    _analyze_batch(
+        batch,
+        client=mock_client,
+        settings=settings,
+        system_prompt=custom_prompt,
+    )
+
+    call_kwargs = mock_client.messages.create.call_args.kwargs
+    assert call_kwargs["system"][0]["text"] == custom_prompt
 
 
 def test_batch_result_outcome_tracks_missing_notam_ids() -> None:
@@ -285,7 +359,7 @@ def test_analyze_notam_batches_collects_missing_from_failed_batches() -> None:
         BETA_SIGNUP_CODE="test-signup-code",
     )
 
-    def fake_analyze(current_batch, *, client, settings):
+    def fake_analyze(current_batch, *, client, settings, system_prompt=None):
         return (
             [NotamResult(notam_id="C0481/26 NOTAMN", category=1, summary="A")],
             BatchCallStats(

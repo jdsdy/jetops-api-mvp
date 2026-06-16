@@ -19,7 +19,7 @@ from app.schemas.pipeline_stage import (
 from app.services.analysis_context import build_flight_context, build_notam_rows
 from app.services.notam_analyzer import (
     analyze_notam_batches,
-    chunk_notam_batches,
+    build_topic_batches,
     map_results_to_raw_notam_ids,
     merge_batch_results,
 )
@@ -76,7 +76,7 @@ def run_analysis_task(job_id: UUID, flight_plan_id: UUID) -> None:
 
         with stage_logger.track("notam_analysis") as analysis_stage:
             batch_result = analyze_notam_batches(
-                chunk_notam_batches(
+                build_topic_batches(
                     flight,
                     notam_rows,
                     batch_size=settings.NOTAM_ANALYSIS_BATCH_SIZE,
@@ -102,7 +102,7 @@ def run_analysis_task(job_id: UUID, flight_plan_id: UUID) -> None:
                     set(batch_result.missing_notam_ids),
                 )
                 retry_result = analyze_notam_batches(
-                    chunk_notam_batches(
+                    build_topic_batches(
                         flight,
                         retry_rows,
                         batch_size=settings.NOTAM_ANALYSIS_RETRY_BATCH_SIZE,

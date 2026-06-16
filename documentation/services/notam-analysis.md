@@ -2,12 +2,12 @@
 
 Batched Claude analysis of parsed NOTAMs for a confirmed flight plan job.
 
-See also: [Begin analysis](../endpoints/v1-jobs-begin-analysis.md) and [Analysis context](analysis-context.md).
+See also: [Begin analysis](../endpoints/v1-jobs-begin-analysis.md), [Analysis context](analysis-context.md), and [NOTAM topic classification](notam-topic-classification.md).
 
 ## Flow
 
 1. **Sync** (`POST /v1/jobs/analysis`): validate job, build flight context (no NOTAMs), set `processing_analysis`, return `{ "response_begun": true }`.
-2. **Background** (`run_analysis_task`): build flight context → fetch `raw_notams` → batch (10 per request) → concurrent Claude calls → on missing NOTAM IDs, set `retrying` and re-analyse only those NOTAMs in batches of 5 → persist `analysed_notams` → set `finished` or `partial_finish`.
+2. **Background** (`run_analysis_task`): build flight context → fetch `raw_notams` (including `topic`) → group by topic → batch (10 per topic group) → route each batch to the matching specialist agent → concurrent Claude calls → on missing NOTAM IDs, set `retrying` and re-analyse only those NOTAMs in batches of 5 (preserving topic) → persist `analysed_notams` → set `finished` or `partial_finish`.
 
 ## Module layout
 
@@ -15,12 +15,15 @@ See also: [Begin analysis](../endpoints/v1-jobs-begin-analysis.md) and [Analysis
 |---|---|
 | [`app/services/analysis_service.py`](../../app/services/analysis_service.py) | Sync validation and status transition |
 | [`app/services/analysis_task.py`](../../app/services/analysis_task.py) | Background pipeline orchestration |
-| [`app/services/notam_analyzer.py`](../../app/services/notam_analyzer.py) | Batching, prompt assembly, Anthropic `messages.create` with JSON schema |
+| [`app/services/notam_analyzer.py`](../../app/services/notam_analyzer.py) | Topic grouping, batching, prompt assembly, Anthropic calls |
+| [`app/services/notam_topic_prompts.py`](../../app/services/notam_topic_prompts.py) | Topic → system prompt registry |
 | [`app/repositories/analysed_notam_repository.py`](../../app/repositories/analysed_notam_repository.py) | Bulk insert into `analysed_notams` |
 
 ## Batching
 
-NOTAMs are chunked into groups of `NOTAM_ANALYSIS_BATCH_SIZE` (default 10). Each batch payload repeats the same `FlightContext` with a slice of NOTAM rows:
+NOTAMs are grouped by `raw_notams.topic` (defaulting null to `MISC`), then chunked into groups of `NOTAM_ANALYSIS_BATCH_SIZE` (default 10) within each topic. Each batch uses the system prompt for its topic via `get_system_prompt()`.
+
+Each batch payload repeats the same `FlightContext` with a slice of NOTAM rows:
 
 ```json
 { "flight": { ... }, "notams": [ ... ] }

@@ -84,9 +84,9 @@ def test_run_analysis_task_success_sets_finished_and_persists() -> None:
             return_value=notam_rows,
         ),
         patch(
-            "app.services.analysis_task.chunk_notam_batches",
+            "app.services.analysis_task.build_topic_batches",
             return_value=[MagicMock()],
-        ) as mock_chunk,
+        ) as mock_build_batches,
         patch(
             "app.services.analysis_task.analyze_notam_batches",
             return_value=batch_result,
@@ -95,7 +95,7 @@ def test_run_analysis_task_success_sets_finished_and_persists() -> None:
     ):
         run_analysis_task(job_id, PLAN_ID)
 
-    mock_chunk.assert_called_once()
+    mock_build_batches.assert_called_once()
     mock_analysed_repo.insert_analysed_notams.assert_called_once()
     mock_job_repo.update_status.assert_called_once_with(job_id, FINISHED)
     mock_job_repo.mark_failed.assert_not_called()
@@ -171,9 +171,9 @@ def test_run_analysis_task_retries_missing_notams_and_finishes() -> None:
             return_value=notam_rows,
         ),
         patch(
-            "app.services.analysis_task.chunk_notam_batches",
+            "app.services.analysis_task.build_topic_batches",
             side_effect=lambda flight, rows, batch_size: [MagicMock()],
-        ) as mock_chunk,
+        ) as mock_build_batches,
         patch(
             "app.services.analysis_task.analyze_notam_batches",
             side_effect=[initial_result, retry_result],
@@ -183,8 +183,8 @@ def test_run_analysis_task_retries_missing_notams_and_finishes() -> None:
         run_analysis_task(job_id, PLAN_ID)
 
     assert mock_analyze.call_count == 2
-    assert mock_chunk.call_args_list[0].kwargs["batch_size"] == 10
-    assert mock_chunk.call_args_list[1].kwargs["batch_size"] == 5
+    assert mock_build_batches.call_args_list[0].kwargs["batch_size"] == 10
+    assert mock_build_batches.call_args_list[1].kwargs["batch_size"] == 5
     mock_job_repo.update_status.assert_any_call(job_id, RETRYING)
     mock_job_repo.update_status.assert_called_with(job_id, FINISHED)
     mock_analysed_repo.insert_analysed_notams.assert_called_once()
@@ -262,7 +262,7 @@ def test_run_analysis_task_sets_partial_finish_when_retry_still_missing() -> Non
             return_value=notam_rows,
         ),
         patch(
-            "app.services.analysis_task.chunk_notam_batches",
+            "app.services.analysis_task.build_topic_batches",
             return_value=[MagicMock()],
         ),
         patch(

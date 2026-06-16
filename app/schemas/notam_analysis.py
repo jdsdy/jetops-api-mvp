@@ -1,6 +1,7 @@
 from pydantic import BaseModel, RootModel
 
 from app.schemas.analysis_context import FlightContext
+from app.schemas.notam_topic import MISC_TOPIC
 
 
 class NotamResult(BaseModel):
@@ -17,6 +18,7 @@ class AnalysisNotamRow(BaseModel):
     id: int
     title: str | None = None
     notam_id: str
+    topic: str | None = None
     q: str | None = None
     a: str | None = None
     b: str | None = None
@@ -30,6 +32,7 @@ class AnalysisNotamRow(BaseModel):
 class NotamBatchPayload(BaseModel):
     flight: FlightContext
     notams: list[AnalysisNotamRow]
+    topic: str = MISC_TOPIC
 
 
 class BatchCallStats(BaseModel):
