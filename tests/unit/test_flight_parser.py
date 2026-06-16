@@ -62,6 +62,66 @@ def test_ybbn_rjtt_foreflight_no_alternate() -> None:
     assert data.alt_icao is None
 
 
+def test_ypph_ybtl_foreflight_with_recall_number() -> None:
+    data = parse_flight_data(load_txt("ypph-ybtl 17jun26.txt"))
+
+    assert data.departure_icao == "YPPH"
+    assert data.arrival_icao == "YBTL"
+    assert data.planned_dept_time == datetime(2026, 6, 17, 5, 10, tzinfo=UTC)
+    assert data.planned_arr_time == datetime(2026, 6, 17, 8, 37, tzinfo=UTC)
+    assert data.source_app == "foreflight"
+
+
+def test_foreflight_etd_eta_line_without_recall_prefix() -> None:
+    text = (
+        "YSSY — YBBN (Apr 25, 2026) in N70HN\n"
+        "Recall # DEP ETD DEST ETA\n"
+        "YSSY 19:10 AEST / 0910Z YBBN 20:06 AEST / 1006Z\n"
+        "@ FL450\n"
+        "Route Report\nDeparture Destination STD\n"
+        "YSSY YBBN\n"
+        "Route DCT RESTRICTIONS\n"
+    )
+    data = parse_flight_data(text)
+
+    assert data.departure_icao == "YSSY"
+    assert data.arrival_icao == "YBBN"
+    assert data.planned_dept_time == datetime(2026, 4, 25, 9, 10, tzinfo=UTC)
+    assert data.planned_arr_time == datetime(2026, 4, 25, 10, 6, tzinfo=UTC)
+
+
+def test_foreflight_etd_eta_line_with_recall_prefix() -> None:
+    text = (
+        "Recall # DEP ETD DEST ETA\n"
+        "F0100 YPPH 13:10 AWST / 0510Z YBTL 18:37 AEST / 0837Z\n"
+        "YPPH — YBTL (Jun 17, 2026) in N70HN\n"
+        "@ FL450\n"
+        "Route Report\nDeparture Destination STD\n"
+        "YPPH YBTL\n"
+        "Route DCT RESTRICTIONS\n"
+    )
+    data = parse_flight_data(text)
+
+    assert data.departure_icao == "YPPH"
+    assert data.arrival_icao == "YBTL"
+    assert data.planned_dept_time == datetime(2026, 6, 17, 5, 10, tzinfo=UTC)
+    assert data.planned_arr_time == datetime(2026, 6, 17, 8, 37, tzinfo=UTC)
+
+
+def test_foreflight_etd_eta_line_raises_when_departure_not_icao() -> None:
+    text = (
+        "YSSY — YBBN (Apr 25, 2026) in N70HN\n"
+        "RECALL 1234 19:10 AEST / 0910Z YBBN 20:06 AEST / 1006Z\n"
+        "@ FL450\n"
+        "Route Report\nDeparture Destination STD\n"
+        "YSSY YBBN\n"
+        "Route DCT RESTRICTIONS\n"
+    )
+
+    with pytest.raises(ValueError, match="ForeFlight ETD/ETA line not found"):
+        parse_flight_data(text)
+
+
 # --- NAIPS ---
 
 

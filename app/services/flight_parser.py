@@ -104,9 +104,10 @@ _FF_HEADER_ICAO_DATE = re.compile(
     re.MULTILINE,
 )
 _FF_ETD_ETA_LINE = re.compile(
-    r"^([A-Z]{4})\s+.*?/\s*(\d{4})Z\s+([A-Z]{4})\s+.*?/\s*(\d{4})Z",
+    r"^(.+?)/\s*(\d{4})Z\s+([A-Z]{4})\s+.*?/\s*(\d{4})Z",
     re.MULTILINE,
 )
+_ICAO_CODE = re.compile(r"^[A-Z]{4}$")
 _FF_CRUISE_LEVEL = re.compile(r"@\s*(FL\d+)", re.IGNORECASE)
 _FF_ROUTE_REPORT_BLOCK = re.compile(
     r"Route Report\s+Departure Destination STD\s+.*?\nRoute\s+(.*?)\s+RESTRICTIONS",
@@ -117,6 +118,17 @@ _FF_PRIMARY_ALTERNATE = re.compile(
     re.DOTALL,
 )
 _FF_ALTERNATE_ICAO = re.compile(r"^([A-Z]{4})\s+BURN:", re.MULTILINE)
+
+
+def _foreflight_departure_icao_from_prefix(prefix: str) -> str | None:
+    words = prefix.split()
+    if not words:
+        return None
+    if _ICAO_CODE.match(words[0]):
+        return words[0]
+    if len(words) >= 2 and _ICAO_CODE.match(words[1]):
+        return words[1]
+    return None
 
 
 def _parse_foreflight(text: str) -> FlightData:
@@ -131,7 +143,10 @@ def _parse_foreflight(text: str) -> FlightData:
     if not etd_eta:
         raise ValueError("ForeFlight ETD/ETA line not found")
 
-    line_dep, dept_zulu, line_arr, arr_zulu = etd_eta.groups()
+    prefix, dept_zulu, line_arr, arr_zulu = etd_eta.groups()
+    line_dep = _foreflight_departure_icao_from_prefix(prefix.strip())
+    if line_dep is None:
+        raise ValueError("ForeFlight ETD/ETA line not found")
     if line_dep != departure_icao or line_arr != arrival_icao:
         raise ValueError("ForeFlight ETD/ETA ICAOs do not match header")
 
