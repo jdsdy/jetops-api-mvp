@@ -31,7 +31,9 @@ Each batch payload repeats the same `FlightContext` with a slice of NOTAM rows:
 
 Batches run concurrently via `ThreadPoolExecutor` with `NOTAM_ANALYSIS_MAX_CONCURRENCY` workers (default 4).
 
-If the model omits NOTAM IDs from a batch response, those IDs are collected as `missing_notam_ids` rather than failing the whole job. Before retrying, successfully analysed NOTAMs are inserted into `analysed_notams` and missing NOTAMs are inserted with `category` and `summary` set to `null` and `did_error` set to `false`. The pipeline then sets `retrying` and re-analyses only the missing NOTAMs in batches of `NOTAM_ANALYSIS_RETRY_BATCH_SIZE` (default 5). Retry successes update the placeholder rows; retry failures set `did_error` to `true`.
+If the model omits NOTAM IDs from a batch response, those IDs are collected as `missing_notam_ids` rather than failing the whole job. Specialist agents may also return `rejected_notam_ids` for out-of-scope NOTAMs; those are retried with the general (`MISC`) agent and its system prompt, not the same specialist.
+
+Before retrying, successfully analysed NOTAMs are inserted into `analysed_notams` and pending NOTAMs (missing or rejected) are inserted with `category` and `summary` set to `null` and `did_error` set to `false`. The pipeline then sets `retrying` and re-analyses rejected NOTAMs via `chunk_notam_batches(..., topic="MISC")`, and missing NOTAMs via `build_topic_batches` (same specialist topic). Retry successes update the placeholder rows; retry failures set `did_error` to `true`.
 
 ## Claude settings
 
@@ -44,7 +46,7 @@ If the model omits NOTAM IDs from a batch response, those IDs are collected as `
 | `NOTAM_ANALYSIS_INPUT_COST_PER_M` | `3.0` USD |
 | `NOTAM_ANALYSIS_OUTPUT_COST_PER_M` | `15.0` USD |
 
-Structured output uses `client.messages.create()` with `output_config.format` (`json_schema` array of `notam_id`, `category`, `summary`). The system prompt is cached via `cache_control` on the system text block. Thinking/reasoning is disabled. Response JSON is validated into `NotamResult` models.
+Structured output uses `client.messages.create()` with `output_config.format` (`json_schema`). The general agent returns a JSON array of `notam_id`, `category`, `summary`. Specialist agents return an object with `results` (same array shape) and `rejected_notam_ids` (string array). The system prompt is cached via `cache_control` on the system text block. Thinking/reasoning is disabled. Response JSON is validated into Pydantic models.
 
 ## Pipeline stage logs
 

@@ -14,6 +14,11 @@ class AnalysisOutput(RootModel[list[NotamResult]]):
     root: list[NotamResult]
 
 
+class SpecialistAnalysisOutput(BaseModel):
+    results: list[NotamResult]
+    rejected_notam_ids: list[str] = []
+
+
 class AnalysisNotamRow(BaseModel):
     id: int
     title: str | None = None
@@ -48,6 +53,7 @@ class BatchAnalysisResult(BaseModel):
     model: str
     token_limit_hit: bool
     missing_notam_ids: list[str] = []
+    rejected_notam_ids: list[str] = []
 
     @property
     def batches(self) -> int:

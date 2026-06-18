@@ -51,7 +51,9 @@
             "FLOW CONTROL CENTER",
             "AREA CONTROLC CENTER",
             "FLIGHT INFORMATION SERVICE",
-            "ATS REPORTING OFFICE"
+            "ATS REPORTING OFFICE",
+            "OCEANIC CONTROL AREA",
+            "TERMINAL CONTROL AREA"
         ],
         "moderate": [
             "VOLMET"
@@ -176,9 +178,7 @@
         ],
         "moderate": [
             "PILOT RESPONSIBILITY TO CK AND MNT STS",
-            "OTHER TIMES MAY BE ACTIVATED AT SHORT NOTICE",
-            "OCEANIC CONTROL AREA",
-            "TERMINAL CONTROL AREA"         
+            "OTHER TIMES MAY BE ACTIVATED AT SHORT NOTICE"       
         ],
         "weak": [
             "MIL",
