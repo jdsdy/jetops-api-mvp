@@ -13,7 +13,6 @@ from app.schemas.notam_analysis import (
 )
 from app.services.notam_analyzer import (
     GENERAL_ANALYSIS_OUTPUT_JSON_SCHEMA,
-    PLACEHOLDER_SYSTEM_PROMPT,
     SPECIALIST_ANALYSIS_OUTPUT_JSON_SCHEMA,
     _analyze_batch,
     _batch_result_outcome,
@@ -26,6 +25,7 @@ from app.services.notam_analyzer import (
     map_results_to_raw_notam_ids,
     merge_batch_results,
 )
+from app.services.notam_topic_prompts import GENERIC
 
 
 def _flight_context() -> FlightContext:
@@ -337,7 +337,7 @@ def test_analyze_batch_uses_misc_prompt_by_default() -> None:
         },
         "effort": "low",
     }
-    assert call_kwargs["system"][0]["text"] == PLACEHOLDER_SYSTEM_PROMPT
+    assert call_kwargs["system"][0]["text"] == GENERIC
     assert call_kwargs["system"][0]["cache_control"] == {"type": "ephemeral"}
 
 

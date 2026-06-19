@@ -16,7 +16,7 @@ from app.schemas.notam_analysis import (
     NotamResult,
     SpecialistAnalysisOutput,
 )
-from app.services.notam_topic_prompts import PLACEHOLDER_SYSTEM_PROMPT, get_system_prompt
+from app.services.notam_topic_prompts import get_system_prompt
 
 # ---------------------------------------------------------------------------
 # Batching

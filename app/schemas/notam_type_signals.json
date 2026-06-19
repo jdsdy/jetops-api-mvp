@@ -36,24 +36,36 @@
     },
     "AIRSPACE_ORGANISATION": {
         "strong": [
-            "DESIGNTED AIRSPACE HANDBOOK"
+            "DESIGNATED AIRSPACE HANDBOOK",
+            "GRID LOWEST SAFE ALTITUDE",
+            "TERMINAL AREA CHART"
         ],
         "moderate": [
-            ""
+            "LSALT"
         ],
         "weak": [
             "ROUTE"
-
         ]
     },
     "PROCEDURE_GENERAL": {
         "strong": [
             "FLOW CONTROL CENTER",
+            "FLOW MANAGEMENT",
+            "ARRIVAL GROUND DELAY PROGRAM",
             "AREA CONTROLC CENTER",
             "FLIGHT INFORMATION SERVICE",
             "ATS REPORTING OFFICE",
             "OCEANIC CONTROL AREA",
-            "TERMINAL CONTROL AREA"
+            "TERMINAL CONTROL AREA",
+            "A-CDM NOT AVBL DUE MAINT",
+            "TARGET OFF BLOCKS TIME",
+            "CALCULATED OFF BLOCKS TIME",
+            "ACTUAL OFF BLOCKS TIME",
+            "SCHEDULED OFF BLOCKS TIME",
+            "TOBT",
+            "COBT",
+            "SOBT",
+            "AOBT"
         ],
         "moderate": [
             "VOLMET"
@@ -98,7 +110,10 @@
             "TERMINAL AREA SURVEILLANCE RADAR"
         ],
         "moderate": [
-            "RADAR COVERAGE"
+            "RADAR COVERAGE",
+            "REDUCED COVERAGE",
+            "ALTN FREQ",
+            "A/G FAC"
         ],
         "weak": [
             "ADS-B",

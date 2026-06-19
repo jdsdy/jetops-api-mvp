@@ -17,6 +17,7 @@ See also: [Begin analysis](../endpoints/v1-jobs-begin-analysis.md), [Analysis co
 | [`app/services/analysis_task.py`](../../app/services/analysis_task.py) | Background pipeline orchestration |
 | [`app/services/notam_analyzer.py`](../../app/services/notam_analyzer.py) | Topic grouping, batching, prompt assembly, Anthropic calls |
 | [`app/services/notam_topic_prompts.py`](../../app/services/notam_topic_prompts.py) | Topic → system prompt registry |
+| [`app/services/notam_prompts/`](../../app/services/notam_prompts/) | Per-topic system prompt content |
 | [`app/repositories/analysed_notam_repository.py`](../../app/repositories/analysed_notam_repository.py) | Bulk insert into `analysed_notams` |
 
 ## Batching

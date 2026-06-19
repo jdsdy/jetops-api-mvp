@@ -47,7 +47,7 @@ Resolution:
 
 ## Specialist analysis prompts
 
-The general (MISC) system prompt lives unchanged in [`app/services/notam_topic_prompts.py`](../../app/services/notam_topic_prompts.py) as `PLACEHOLDER_SYSTEM_PROMPT`. Add specialist topic prompts to the same file before running analysis on non-`MISC` topics.
+The general (MISC) system prompt lives in [`app/services/notam_prompts/generic.py`](../../app/services/notam_prompts/generic.py) as `GENERIC`. Specialist topic prompts live alongside it under `app/services/notam_prompts/` and are registered in [`app/services/notam_topic_prompts.py`](../../app/services/notam_topic_prompts.py).
 
 ## Module layout
 
