@@ -14,9 +14,9 @@ class NotamRepository:
         analysis_job_id: UUID,
         flight_plan_id: UUID,
         notams: list[RawNotam],
-    ) -> None:
+    ) -> list[dict]:
         if not notams:
-            return
+            return []
 
         rows = [
             {
@@ -35,4 +35,17 @@ class NotamRepository:
             }
             for notam in notams
         ]
-        self._client.table("raw_notams").insert(rows).execute()
+        result = self._client.table("raw_notams").insert(rows).execute()
+        return result.data or []
+
+    def update_notam_classification(
+        self,
+        updates: list[tuple[int, str, int]],
+    ) -> None:
+        for row_id, topic, confidence in updates:
+            (
+                self._client.table("raw_notams")
+                .update({"topic": topic, "topic_confidence": confidence})
+                .eq("id", row_id)
+                .execute()
+            )

@@ -19,6 +19,7 @@ from app.schemas.pipeline_stage import (
 from app.services.analysis_context import build_flight_context, build_notam_rows
 from app.services.notam_analyzer import (
     analyze_notam_batches,
+    build_topic_batches,
     chunk_notam_batches,
     map_results_to_raw_notam_ids,
     merge_batch_results,
@@ -35,28 +36,46 @@ def _filter_notam_rows(
 
 def _map_pending_notam_rows(
     notam_rows: list[AnalysisNotamRow],
-    missing_notam_ids: list[str],
+    pending_notam_ids: list[str],
 ) -> list[tuple[int, None]]:
-    missing = set(missing_notam_ids)
-    return [(row.id, None) for row in notam_rows if row.notam_id in missing]
+    pending = set(pending_notam_ids)
+    return [(row.id, None) for row in notam_rows if row.notam_id in pending]
 
 
 def _map_raw_notam_ids(
     notam_rows: list[AnalysisNotamRow],
     notam_ids: list[str],
 ) -> list[int]:
-    missing = set(notam_ids)
-    return [row.id for row in notam_rows if row.notam_id in missing]
+    pending = set(notam_ids)
+    return [row.id for row in notam_rows if row.notam_id in pending]
+
+
+def _pending_notam_ids(
+    missing_notam_ids: list[str],
+    rejected_notam_ids: list[str],
+) -> list[str]:
+    return sorted(set(missing_notam_ids) | set(rejected_notam_ids))
 
 
 def _build_initial_persist_rows(
     notam_rows: list[AnalysisNotamRow],
     results: list[NotamResult],
-    missing_notam_ids: list[str],
+    pending_notam_ids: list[str],
 ) -> list[tuple[int, NotamResult | None]]:
     completed = map_results_to_raw_notam_ids(notam_rows, results)
-    pending = _map_pending_notam_rows(notam_rows, missing_notam_ids)
+    pending = _map_pending_notam_rows(notam_rows, pending_notam_ids)
     return completed + pending
+
+
+def _apply_retry_updates(
+    job_id: UUID,
+    notam_rows: list[AnalysisNotamRow],
+    analysed_notam_repository: AnalysedNotamRepository,
+    retry_result,
+) -> None:
+    retry_mapped = map_results_to_raw_notam_ids(notam_rows, retry_result.results)
+    if retry_mapped:
+        analysed_notam_repository.update_analysed_notams(job_id, retry_mapped)
 
 
 def run_analysis_task(job_id: UUID, flight_plan_id: UUID) -> None:
@@ -76,7 +95,7 @@ def run_analysis_task(job_id: UUID, flight_plan_id: UUID) -> None:
 
         with stage_logger.track("notam_analysis") as analysis_stage:
             batch_result = analyze_notam_batches(
-                chunk_notam_batches(
+                build_topic_batches(
                     flight,
                     notam_rows,
                     batch_size=settings.NOTAM_ANALYSIS_BATCH_SIZE,
@@ -84,48 +103,85 @@ def run_analysis_task(job_id: UUID, flight_plan_id: UUID) -> None:
             )
 
             retried_notam_ids: list[str] | None = None
-            if batch_result.missing_notam_ids:
-                retried_notam_ids = list(batch_result.missing_notam_ids)
+            pending_ids = _pending_notam_ids(
+                batch_result.missing_notam_ids,
+                batch_result.rejected_notam_ids,
+            )
+            if pending_ids:
+                retried_notam_ids = pending_ids
                 analysed_notam_repository.insert_analysed_notams(
                     job_id,
                     flight_plan_id,
                     _build_initial_persist_rows(
                         notam_rows,
                         batch_result.results,
-                        batch_result.missing_notam_ids,
+                        pending_ids,
                     ),
                 )
 
                 job_repository.update_status(job_id, RETRYING)
-                retry_rows = _filter_notam_rows(
-                    notam_rows,
-                    set(batch_result.missing_notam_ids),
-                )
-                retry_result = analyze_notam_batches(
-                    chunk_notam_batches(
-                        flight,
-                        retry_rows,
-                        batch_size=settings.NOTAM_ANALYSIS_RETRY_BATCH_SIZE,
-                    )
-                )
+                retry_results = []
 
-                retry_mapped = map_results_to_raw_notam_ids(
-                    notam_rows,
-                    retry_result.results,
-                )
-                if retry_mapped:
-                    analysed_notam_repository.update_analysed_notams(
+                if batch_result.rejected_notam_ids:
+                    rejected_rows = _filter_notam_rows(
+                        notam_rows,
+                        set(batch_result.rejected_notam_ids),
+                    )
+                    rejected_result = analyze_notam_batches(
+                        chunk_notam_batches(
+                            flight,
+                            rejected_rows,
+                            batch_size=settings.NOTAM_ANALYSIS_RETRY_BATCH_SIZE,
+                            topic="MISC",
+                        )
+                    )
+                    _apply_retry_updates(
                         job_id,
-                        retry_mapped,
+                        notam_rows,
+                        analysed_notam_repository,
+                        rejected_result,
                     )
+                    retry_results.append(rejected_result)
 
-                if retry_result.missing_notam_ids:
+                if batch_result.missing_notam_ids:
+                    missing_rows = _filter_notam_rows(
+                        notam_rows,
+                        set(batch_result.missing_notam_ids),
+                    )
+                    missing_result = analyze_notam_batches(
+                        build_topic_batches(
+                            flight,
+                            missing_rows,
+                            batch_size=settings.NOTAM_ANALYSIS_RETRY_BATCH_SIZE,
+                        )
+                    )
+                    _apply_retry_updates(
+                        job_id,
+                        notam_rows,
+                        analysed_notam_repository,
+                        missing_result,
+                    )
+                    retry_results.append(missing_result)
+
+                still_pending: set[str] = set()
+                for retry_result in retry_results:
+                    still_pending.update(retry_result.missing_notam_ids)
+                    still_pending.update(retry_result.rejected_notam_ids)
+
+                if still_pending:
                     analysed_notam_repository.mark_analysed_notams_errored(
                         job_id,
-                        _map_raw_notam_ids(notam_rows, retry_result.missing_notam_ids),
+                        _map_raw_notam_ids(notam_rows, sorted(still_pending)),
                     )
 
-                batch_result = merge_batch_results(batch_result, retry_result)
+                if retry_results:
+                    batch_result = merge_batch_results(batch_result, *retry_results)
+                    batch_result = batch_result.model_copy(
+                        update={
+                            "missing_notam_ids": sorted(still_pending),
+                            "rejected_notam_ids": [],
+                        }
+                    )
             else:
                 analysed_notam_repository.insert_analysed_notams(
                     job_id,

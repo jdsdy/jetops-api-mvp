@@ -2,12 +2,12 @@
 
 Batched Claude analysis of parsed NOTAMs for a confirmed flight plan job.
 
-See also: [Begin analysis](../endpoints/v1-jobs-begin-analysis.md) and [Analysis context](analysis-context.md).
+See also: [Begin analysis](../endpoints/v1-jobs-begin-analysis.md), [Analysis context](analysis-context.md), and [NOTAM topic classification](notam-topic-classification.md).
 
 ## Flow
 
 1. **Sync** (`POST /v1/jobs/analysis`): validate job, build flight context (no NOTAMs), set `processing_analysis`, return `{ "response_begun": true }`.
-2. **Background** (`run_analysis_task`): build flight context → fetch `raw_notams` → batch (10 per request) → concurrent Claude calls → on missing NOTAM IDs, set `retrying` and re-analyse only those NOTAMs in batches of 5 → persist `analysed_notams` → set `finished` or `partial_finish`.
+2. **Background** (`run_analysis_task`): build flight context → fetch `raw_notams` (including `topic`) → group by topic → batch (10 per topic group) → route each batch to the matching specialist agent → concurrent Claude calls → on missing NOTAM IDs, set `retrying` and re-analyse only those NOTAMs in batches of 5 (preserving topic) → persist `analysed_notams` → set `finished` or `partial_finish`.
 
 ## Module layout
 
@@ -15,12 +15,16 @@ See also: [Begin analysis](../endpoints/v1-jobs-begin-analysis.md) and [Analysis
 |---|---|
 | [`app/services/analysis_service.py`](../../app/services/analysis_service.py) | Sync validation and status transition |
 | [`app/services/analysis_task.py`](../../app/services/analysis_task.py) | Background pipeline orchestration |
-| [`app/services/notam_analyzer.py`](../../app/services/notam_analyzer.py) | Batching, prompt assembly, Anthropic `messages.create` with JSON schema |
+| [`app/services/notam_analyzer.py`](../../app/services/notam_analyzer.py) | Topic grouping, batching, prompt assembly, Anthropic calls |
+| [`app/services/notam_topic_prompts.py`](../../app/services/notam_topic_prompts.py) | Topic → system prompt registry |
+| [`app/services/notam_prompts/`](../../app/services/notam_prompts/) | Per-topic system prompt content |
 | [`app/repositories/analysed_notam_repository.py`](../../app/repositories/analysed_notam_repository.py) | Bulk insert into `analysed_notams` |
 
 ## Batching
 
-NOTAMs are chunked into groups of `NOTAM_ANALYSIS_BATCH_SIZE` (default 10). Each batch payload repeats the same `FlightContext` with a slice of NOTAM rows:
+NOTAMs are grouped by `raw_notams.topic` (defaulting null to `MISC`), then chunked into groups of `NOTAM_ANALYSIS_BATCH_SIZE` (default 10) within each topic. Each batch uses the system prompt for its topic via `get_system_prompt()`.
+
+Each batch payload repeats the same `FlightContext` with a slice of NOTAM rows:
 
 ```json
 { "flight": { ... }, "notams": [ ... ] }
@@ -28,7 +32,9 @@ NOTAMs are chunked into groups of `NOTAM_ANALYSIS_BATCH_SIZE` (default 10). Each
 
 Batches run concurrently via `ThreadPoolExecutor` with `NOTAM_ANALYSIS_MAX_CONCURRENCY` workers (default 4).
 
-If the model omits NOTAM IDs from a batch response, those IDs are collected as `missing_notam_ids` rather than failing the whole job. Before retrying, successfully analysed NOTAMs are inserted into `analysed_notams` and missing NOTAMs are inserted with `category` and `summary` set to `null` and `did_error` set to `false`. The pipeline then sets `retrying` and re-analyses only the missing NOTAMs in batches of `NOTAM_ANALYSIS_RETRY_BATCH_SIZE` (default 5). Retry successes update the placeholder rows; retry failures set `did_error` to `true`.
+If the model omits NOTAM IDs from a batch response, those IDs are collected as `missing_notam_ids` rather than failing the whole job. Specialist agents may also return `rejected_notam_ids` for out-of-scope NOTAMs; those are retried with the general (`MISC`) agent and its system prompt, not the same specialist.
+
+Before retrying, successfully analysed NOTAMs are inserted into `analysed_notams` and pending NOTAMs (missing or rejected) are inserted with `category` and `summary` set to `null` and `did_error` set to `false`. The pipeline then sets `retrying` and re-analyses rejected NOTAMs via `chunk_notam_batches(..., topic="MISC")`, and missing NOTAMs via `build_topic_batches` (same specialist topic). Retry successes update the placeholder rows; retry failures set `did_error` to `true`.
 
 ## Claude settings
 
@@ -41,7 +47,7 @@ If the model omits NOTAM IDs from a batch response, those IDs are collected as `
 | `NOTAM_ANALYSIS_INPUT_COST_PER_M` | `3.0` USD |
 | `NOTAM_ANALYSIS_OUTPUT_COST_PER_M` | `15.0` USD |
 
-Structured output uses `client.messages.create()` with `output_config.format` (`json_schema` array of `notam_id`, `category`, `summary`). The system prompt is cached via `cache_control` on the system text block. Thinking/reasoning is disabled. Response JSON is validated into `NotamResult` models.
+Structured output uses `client.messages.create()` with `output_config.format` (`json_schema`). The general agent returns a JSON array of `notam_id`, `category`, `summary`. Specialist agents return an object with `results` (same array shape) and `rejected_notam_ids` (string array). The system prompt is cached via `cache_control` on the system text block. Thinking/reasoning is disabled. Response JSON is validated into Pydantic models.
 
 ## Pipeline stage logs
 

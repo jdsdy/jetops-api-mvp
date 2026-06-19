@@ -20,8 +20,12 @@ Each NOTAM maps to one `raw_notams` row. Fields that are absent are stored as `n
 | `e` | NOTAM text | `E)` tag (multi-line) | body lines (multi-line) | body lines before F/G or `FROM … TO …` |
 | `f` | Lower limit | `F)` tag | `SFC TO ...` lower value | `SFC TO ...` lower value |
 | `g` | Upper limit | `G)` tag | `... TO <limit>` upper value | `... TO <limit>` upper value |
+| `topic` | Analysis routing topic | set in `notam_topic_classification` stage | same | same |
+| `topic_confidence` | Classification score for debugging | set in `notam_topic_classification` stage | same | same |
 
 Multi-line `e` (and `d`) values join source lines with a `{\n} ` marker (no leading space before the delimiter) so the original line structure can be re-rendered to the user.
+
+After insert, the extraction pipeline runs [topic classification](notam-topic-classification.md) and updates `topic` / `topic_confidence` on each row.
 
 ## Format quirks handled
 
@@ -45,7 +49,7 @@ Multi-line `e` (and `d`) values join source lines with a `{\n} ` marker (no lead
 | Module | Role |
 |---|---|
 | [`app/services/notam_parser.py`](../../app/services/notam_parser.py) | Shared helpers, ForeFlight + NAIPS + OzRunways NOTAM parsers, `extract_notams` |
-| [`app/repositories/notam_repository.py`](../../app/repositories/notam_repository.py) | Bulk insert into `raw_notams` |
+| [`app/repositories/notam_repository.py`](../../app/repositories/notam_repository.py) | Bulk insert into `raw_notams`; update topic classification |
 
 ## Tests
 

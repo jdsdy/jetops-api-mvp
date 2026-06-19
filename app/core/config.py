@@ -25,6 +25,11 @@ class Settings(BaseSettings):
     NOTAM_ANALYSIS_INPUT_COST_PER_M: float = 3.0
     NOTAM_ANALYSIS_OUTPUT_COST_PER_M: float = 15.0
 
+    NOTAM_TOPIC_STRONG_SCORE: int = 10
+    NOTAM_TOPIC_MODERATE_SCORE: int = 5
+    NOTAM_TOPIC_WEAK_SCORE: int = 2
+    NOTAM_TOPIC_SCORE_CUTOFF: int = 15
+
 
 @lru_cache
 def get_settings() -> Settings:

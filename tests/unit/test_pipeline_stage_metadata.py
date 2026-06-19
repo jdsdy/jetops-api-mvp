@@ -11,6 +11,7 @@ from app.schemas.pipeline_stage import (
     build_flight_parse_metadata,
     build_notam_analysis_metadata,
     build_notam_parse_metadata,
+    build_notam_topic_classification_metadata,
 )
 
 
@@ -56,6 +57,21 @@ def test_build_flight_parse_metadata_includes_all_fields_when_populated() -> Non
 
     assert metadata.fields_missing == []
     assert set(metadata.fields_extracted) == set(flight_data.model_dump().keys())
+
+
+def test_build_notam_topic_classification_metadata_counts_topics() -> None:
+    results = [
+        (1, "RUNWAY", 100),
+        (2, "RUNWAY", 20),
+        (3, "MISC", 5),
+    ]
+
+    metadata = build_notam_topic_classification_metadata(results)
+
+    assert metadata.notams_classified == 3
+    assert metadata.topic_counts == {"RUNWAY": 2, "MISC": 1}
+    assert metadata.misc_count == 1
+    assert metadata.classification_errors == 0
 
 
 def test_build_notam_parse_metadata_dedupes_aerodromes() -> None:

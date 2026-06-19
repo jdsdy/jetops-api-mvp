@@ -7,9 +7,10 @@ from app.repositories.job_repository import AWAITING_CONFIRMATION, JobRepository
 from app.repositories.notam_repository import NotamRepository
 from app.schemas.flight import FlightData
 from app.schemas.notam import RawNotam
+from app.schemas.notam_topic import ClassificationResult
 from app.services.extraction_task import run_extraction
 from app.services.pdf_extractor import PdfExtractionResult
-from tests.conftest import PLAN_ID, STORAGE_PATH
+from tests.conftest import PLAN_ID
 
 
 def test_run_extraction_success_persists_flight_notams_and_status() -> None:
@@ -31,8 +32,10 @@ def test_run_extraction_success_persists_flight_notams_and_status() -> None:
         alt_icao="YBLN",
         source_app="foreflight",
     )
-    notams = [RawNotam(notam_id="C0481/26 NOTAMN")]
+    notams = [RawNotam(notam_id="C0481/26 NOTAMN", q="YMMM/QMDCH/IV/NBO/A/000/999/")]
+    inserted = [{"id": 42}]
 
+    mock_notam_repo.insert_notams.return_value = inserted
     mock_stage_repo = MagicMock()
 
     with (
@@ -62,16 +65,23 @@ def test_run_extraction_success_persists_flight_notams_and_status() -> None:
             "app.services.extraction_task.extract_notams",
             return_value=notams,
         ),
+        patch(
+            "app.services.extraction_task.classify_notam",
+            return_value=ClassificationResult(topic="RUNWAY", confidence=100),
+        ),
     ):
-        run_extraction(job_id, PLAN_ID, STORAGE_PATH)
+        run_extraction(job_id, PLAN_ID, "org/flight/plan/file.pdf")
 
-    assert mock_stage_repo.insert_log.call_count == 3
+    assert mock_stage_repo.insert_log.call_count == 4
     mock_flight_repo.update_from_extraction.assert_called_once_with(
         flight_id,
         PLAN_ID,
         flight_data,
     )
     mock_notam_repo.insert_notams.assert_called_once_with(job_id, PLAN_ID, notams)
+    mock_notam_repo.update_notam_classification.assert_called_once_with(
+        [(42, "RUNWAY", 100)],
+    )
     mock_job_repo.update_status.assert_called_once_with(
         job_id,
         AWAITING_CONFIRMATION,
@@ -104,7 +114,7 @@ def test_run_extraction_failure_marks_job_failed() -> None:
             return_value=mock_stage_repo,
         ),
     ):
-        run_extraction(job_id, PLAN_ID, STORAGE_PATH)
+        run_extraction(job_id, PLAN_ID, "org/flight/plan/file.pdf")
 
     mock_job_repo.mark_failed.assert_called_once_with(job_id, "parse failed")
     mock_job_repo.update_status.assert_not_called()
