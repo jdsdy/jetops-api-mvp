@@ -25,7 +25,7 @@ Each NOTAM maps to one `raw_notams` row. Fields that are absent are stored as `n
 
 Multi-line `e` (and `d`) values join source lines with a `{\n} ` marker (no leading space before the delimiter) so the original line structure can be re-rendered to the user.
 
-After insert, the extraction pipeline runs [topic classification](notam-topic-classification.md) and updates `topic` / `topic_confidence` on each row.
+After `notam_parse` extracts NOTAMs in memory, the `notam_topic_classification` stage classifies each NOTAM, merges `topic` / `topic_confidence`, and persists all rows in a single bulk insert to `raw_notams`. See [topic classification](notam-topic-classification.md).
 
 ## Format quirks handled
 

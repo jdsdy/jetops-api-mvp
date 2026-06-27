@@ -1,60 +1,116 @@
 # NOTAM LLM analysis
 
-Batched Claude analysis of parsed NOTAMs for a confirmed flight plan job.
+Split-agent NOTAM analysis for a confirmed flight plan job: Sonnet categorizes, Haiku summarizes, with heuristic category-3 shortcuts for high-confidence topics.
 
-See also: [Begin analysis](../endpoints/v1-jobs-begin-analysis.md), [Analysis context](analysis-context.md), and [NOTAM topic classification](notam-topic-classification.md).
+See also: [Begin analysis](../endpoints/v1-jobs-begin-analysis.md), [Analysis context](analysis-context.md), [NOTAM topic classification](notam-topic-classification.md), and [NOTAM heuristic classification](notam-heuristic-classification.md).
 
 ## Flow
 
 1. **Sync** (`POST /v1/jobs/analysis`): validate job, build flight context (no NOTAMs), set `processing_analysis`, return `{ "response_begun": true }`.
-2. **Background** (`run_analysis_task`): build flight context → fetch `raw_notams` (including `topic`) → group by topic → batch (10 per topic group) → route each batch to the matching specialist agent → concurrent Claude calls → on missing NOTAM IDs, set `retrying` and re-analyse only those NOTAMs in batches of 5 (preserving topic) → persist `analysed_notams` → set `finished` or `partial_finish`.
+2. **Background** (`run_analysis_task`):
+   - Build flight context and fetch `raw_notams` (including `topic` and `topic_confidence`)
+   - Partition NOTAMs into heuristic category candidates vs agent categorization candidates
+   - **Concurrent legs** via `analyze_notam_job`:
+     - **Categorization (Sonnet):** topic-grouped batches for agent rows only; category-only JSON output
+     - **Summarization (Haiku):** flat batches across **all** NOTAMs; condensed payload without flight context
+   - Merge category + summary by `notam_id`
+   - On missing IDs per leg, set `retrying` and re-run only the failing leg (category missing → same topic batch; rejected → `MISC`; summary missing → summary-only Haiku retry)
+   - Persist `analysed_notams` → set `finished` or `partial_finish`
+
+```mermaid
+flowchart TD
+    pull[Fetch raw_notams + flight context]
+    partition[Partition NOTAMs]
+    heuristic[Heuristic category 3]
+    catAgent[Categorization batches Sonnet]
+    sumAgent[Summarization batches Haiku all NOTAMs]
+    merge[Merge by notam_id]
+    persist[analysed_notams]
+
+    pull --> partition
+    partition --> heuristic
+    partition --> catAgent
+    pull --> sumAgent
+    heuristic --> merge
+    catAgent --> merge
+    sumAgent --> merge
+    merge --> persist
+```
 
 ## Module layout
 
 | Module | Role |
 |---|---|
 | [`app/services/analysis_service.py`](../../app/services/analysis_service.py) | Sync validation and status transition |
-| [`app/services/analysis_task.py`](../../app/services/analysis_task.py) | Background pipeline orchestration |
-| [`app/services/notam_analyzer.py`](../../app/services/notam_analyzer.py) | Topic grouping, batching, prompt assembly, Anthropic calls |
-| [`app/services/notam_topic_prompts.py`](../../app/services/notam_topic_prompts.py) | Topic → system prompt registry |
-| [`app/services/notam_prompts/`](../../app/services/notam_prompts/) | Per-topic system prompt content |
-| [`app/repositories/analysed_notam_repository.py`](../../app/repositories/analysed_notam_repository.py) | Bulk insert into `analysed_notams` |
+| [`app/services/analysis_task.py`](../../app/services/analysis_task.py) | Background pipeline orchestration and per-leg retry |
+| [`app/services/notam_analyzer.py`](../../app/services/notam_analyzer.py) | Partitioning, batching, dual agents, merge |
+| [`app/services/notam_heuristic_category.py`](../../app/services/notam_heuristic_category.py) | Analysis-time category-3 eligibility |
+| [`app/services/notam_topic_prompts.py`](../../app/services/notam_topic_prompts.py) | Topic → categorization system prompt registry |
+| [`app/services/notam_prompts/summary.py`](../../app/services/notam_prompts/summary.py) | Haiku summarization system prompt |
+| [`app/services/notam_prompts/`](../../app/services/notam_prompts/) | Per-topic categorization system prompt content |
+| [`app/repositories/analysed_notam_repository.py`](../../app/repositories/analysed_notam_repository.py) | Bulk insert/update into `analysed_notams` |
 
-## Batching
+## Categorization leg (Sonnet)
 
-NOTAMs are grouped by `raw_notams.topic` (defaulting null to `MISC`), then chunked into groups of `NOTAM_ANALYSIS_BATCH_SIZE` (default 10) within each topic. Each batch uses the system prompt for its topic via `get_system_prompt()`.
+NOTAMs requiring LLM categorization are grouped by `raw_notams.topic` (defaulting null to `MISC`), then chunked into groups of `NOTAM_ANALYSIS_BATCH_SIZE` (default 10) within each topic.
 
-Each batch payload repeats the same `FlightContext` with a slice of NOTAM rows:
+Payload includes full flight context:
 
 ```json
 { "flight": { ... }, "notams": [ ... ] }
 ```
 
-Batches run concurrently via `ThreadPoolExecutor` with `NOTAM_ANALYSIS_MAX_CONCURRENCY` workers (default 4).
+Structured output is **category only** — `{ "notam_id", "category" }`. Specialist agents return `{ "results": [...], "rejected_notam_ids": [...] }`. Rejected NOTAMs retry with the general (`MISC`) agent.
 
-If the model omits NOTAM IDs from a batch response, those IDs are collected as `missing_notam_ids` rather than failing the whole job. Specialist agents may also return `rejected_notam_ids` for out-of-scope NOTAMs; those are retried with the general (`MISC`) agent and its system prompt, not the same specialist.
+Heuristic-eligible NOTAMs skip this leg entirely; see [heuristic classification](notam-heuristic-classification.md).
 
-Before retrying, successfully analysed NOTAMs are inserted into `analysed_notams` and pending NOTAMs (missing or rejected) are inserted with `category` and `summary` set to `null` and `did_error` set to `false`. The pipeline then sets `retrying` and re-analyses rejected NOTAMs via `chunk_notam_batches(..., topic="MISC")`, and missing NOTAMs via `build_topic_batches` (same specialist topic). Retry successes update the placeholder rows; retry failures set `did_error` to `true`.
+## Summarization leg (Haiku)
+
+All NOTAMs are summarized in flat batches (not topic-grouped). Payload is condensed — no flight context:
+
+```json
+{ "notams": [ { "title", "notam_id", "q", "a", "b", "c", "d", "e", "f", "g" } ] }
+```
+
+Output: `{ "notam_id", "summary" }` per NOTAM.
+
+Both legs run concurrently inside `analyze_notam_job` before merge.
 
 ## Claude settings
 
-| Setting | Default |
-|---|---|
-| `NOTAM_ANALYSIS_MODEL` | `claude-sonnet-4-6` |
-| `NOTAM_ANALYSIS_BATCH_SIZE` | `10` |
-| `NOTAM_ANALYSIS_RETRY_BATCH_SIZE` | `5` |
-| `NOTAM_ANALYSIS_MAX_TOKENS` | `12000` |
-| `NOTAM_ANALYSIS_INPUT_COST_PER_M` | `3.0` USD |
-| `NOTAM_ANALYSIS_OUTPUT_COST_PER_M` | `15.0` USD |
+| Setting | Default | Leg |
+|---|---|---|
+| `NOTAM_ANALYSIS_MODEL` | `claude-sonnet-4-6` | Categorization |
+| `NOTAM_ANALYSIS_BATCH_SIZE` | `10` | Categorization (initial pass) |
+| `NOTAM_ANALYSIS_RETRY_BATCH_SIZE` | `5` | Categorization retry batches |
+| `NOTAM_ANALYSIS_MAX_TOKENS` | `18000` | Categorization |
+| `NOTAM_ANALYSIS_MAX_CONCURRENCY` | `4` | Per-leg thread pools |
+| `NOTAM_ANALYSIS_INPUT_COST_PER_M` | `3.0` USD | Categorization |
+| `NOTAM_ANALYSIS_OUTPUT_COST_PER_M` | `15.0` USD | Categorization |
+| `NOTAM_SUMMARY_MODEL` | `claude-haiku-4-5` | Summarization |
+| `NOTAM_SUMMARY_BATCH_SIZE` | `20` | Summarization (initial pass) |
+| `NOTAM_SUMMARY_RETRY_BATCH_SIZE` | `10` | Summarization retry batches |
+| `NOTAM_SUMMARY_MAX_TOKENS` | `8000` | Summarization |
+| `NOTAM_SUMMARY_INPUT_COST_PER_M` | `1.0` USD | Summarization |
+| `NOTAM_SUMMARY_OUTPUT_COST_PER_M` | `5.0` USD | Summarization |
 
-Structured output uses `client.messages.create()` with `output_config.format` (`json_schema`). The general agent returns a JSON array of `notam_id`, `category`, `summary`. Specialist agents return an object with `results` (same array shape) and `rejected_notam_ids` (string array). The system prompt is cached via `cache_control` on the system text block. Thinking/reasoning is disabled. Response JSON is validated into Pydantic models.
+Categorization uses adaptive thinking. Summarization sets `thinking: disabled`.
+
+## Retry handling
+
+| Leg | Missing means | Retry strategy |
+|---|---|---|
+| Categorization | ID omitted from category output | Same topic batch; rejected → `MISC` |
+| Summarization | ID omitted from summary output | Summary batches only (Haiku, condensed payload) |
+
+Before retrying, successfully completed fields are inserted and pending NOTAMs get placeholder rows (`category` and/or `summary` may be `null`). Retry updates merge partial fields without overwriting the other leg.
 
 ## Pipeline stage logs
 
 | `stage_name` | Metadata |
 |---|---|
 | `build_context_object` | `departure_airfield_full_data_found`, `arrival_airfield_full_data_found`, `aircraft_full_data_found` |
-| `notam_analysis` | `batches`, `notams_analysed`, `model`, `batch_sizes`, `token_limit_hit`, `slowest_batch_ms`, `input_tokens`, `output_tokens`, `est_cost`, `retried_notam_ids` (when retry ran) |
+| `notam_analysis` | `total_notams`, `heuristically_classified_notams`, `summarisation_batches`, `categorisation_batches`, `summarisation_batch_sizes`, `categorisation_batch_sizes`, `token_limit_hit`, `slowest_batch_ms`, `summarize_input_tokens`, `categorize_input_tokens`, `summarize_output_tokens`, `categorize_output_tokens`, `est_cost`, `retried_summary_notam_ids`, `retried_category_notam_ids` |
 
 **Full data found** rules:
 
@@ -70,8 +126,8 @@ Results are written to `analysed_notams`:
 | `anaysis_job_id` | Job UUID (DB column name as stored) |
 | `flight_plan_id` | Request flight plan UUID |
 | `notam_id` | `raw_notams.id` (bigint FK) |
-| `category` | LLM `NotamResult.category` (`null` until retry succeeds) |
-| `summary` | LLM `NotamResult.summary` (`null` until retry succeeds) |
+| `category` | Merged result (`null` until available) |
+| `summary` | Merged result (`null` until available) |
 | `did_error` | `false` on insert; set `true` when retry still fails for that NOTAM |
 | `created_at` | Row insert timestamp (DB default) |
 
@@ -81,17 +137,16 @@ LLM `notam_id` strings (ICAO format) are mapped to `raw_notams.id` before insert
 
 | Outcome | `analysis_jobs.status` |
 |---|---|
-| All NOTAMs analysed (including after retry) | `finished` |
-| Retry completes but some NOTAMs still missing | `partial_finish` |
+| All NOTAMs fully analysed (category + summary, including after retry) | `finished` |
+| Retry completes but some NOTAMs still missing on either leg | `partial_finish` |
 | Retry in progress | `retrying` |
 | Unrecoverable error (API failure, unknown NOTAM id, etc.) | `failed` (+ `error_message`) |
-
-Successfully analysed NOTAMs are persisted even when the final status is `partial_finish`. Rows for NOTAMs that never analysed successfully remain in `analysed_notams` with `category` and `summary` as `null` and `did_error` set to `true`.
 
 ## Tests
 
 ```bash
 pytest tests/unit/test_notam_analyzer.py \
+       tests/unit/test_notam_heuristic_category.py \
        tests/unit/test_analysis_task.py \
        tests/unit/test_pipeline_stage_metadata.py \
        tests/integration/test_begin_analysis_endpoint.py -v

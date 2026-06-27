@@ -3,17 +3,18 @@ from uuid import UUID
 from supabase import Client
 
 from app.schemas.notam import RawNotam
+from app.schemas.notam_topic import ClassificationResult
 
 
 class NotamRepository:
     def __init__(self, client: Client) -> None:
         self._client = client
 
-    def insert_notams(
+    def insert_classified_notams(
         self,
         analysis_job_id: UUID,
         flight_plan_id: UUID,
-        notams: list[RawNotam],
+        notams: list[tuple[RawNotam, ClassificationResult]],
     ) -> list[dict]:
         if not notams:
             return []
@@ -24,6 +25,8 @@ class NotamRepository:
                 "flight_plan_id": str(flight_plan_id),
                 "notam_id": notam.notam_id,
                 "title": notam.title,
+                "topic": classification.topic,
+                "topic_confidence": classification.confidence,
                 "q": notam.q,
                 "a": notam.a,
                 "b": notam.b,
@@ -33,19 +36,7 @@ class NotamRepository:
                 "f": notam.f,
                 "g": notam.g,
             }
-            for notam in notams
+            for notam, classification in notams
         ]
         result = self._client.table("raw_notams").insert(rows).execute()
         return result.data or []
-
-    def update_notam_classification(
-        self,
-        updates: list[tuple[int, str, int]],
-    ) -> None:
-        for row_id, topic, confidence in updates:
-            (
-                self._client.table("raw_notams")
-                .update({"topic": topic, "topic_confidence": confidence})
-                .eq("id", row_id)
-                .execute()
-            )

@@ -8,13 +8,13 @@ See also: [POST /v1/jobs](../endpoints/v1-jobs-create.md) for how extraction is 
 
 | Field | ForeFlight | NAIPS | OzRunways | DB target |
 |---|---|---|---|
-| `departure_icao` | Header + ETD/ETA line | `STAGE` line | first `ABCD-EFGH` line | `flights.departure_icao` |
-| `arrival_icao` | Header + ETD/ETA line | `STAGE` line | first `ABCD-EFGH` line | `flights.arrival_icao` |
+| `departure_icao` | Header line (`ABCD — EFGH`) | `STAGE` line | first `ABCD-EFGH` line | `flights.departure_icao` |
+| `arrival_icao` | Header line (`ABCD — EFGH`) | `STAGE` line | first `ABCD-EFGH` line | `flights.arrival_icao` |
 | `planned_dept_time` | Zulu time + header date | always null | `Total: … ETD: DD Mon HHMM UTC` | `flight_plans.planned_dept_time` |
 | `planned_arr_time` | Zulu time + header date | always null | ETD + `H:MM` flight duration | `flight_plans.planned_arr_time` |
-| `route` | `Route Report` section | Wind cross-section waypoints | always null | `flight_plans.route` |
+| `route` | Overflight Report (`Route` … `COUNTRY`), else `Route Report` | Wind cross-section waypoints | always null | `flight_plans.route` |
 | `cruise_level` | `@ FLnnn` on cruise line | `STAGE` line | always null | `flight_plans.cruise_level` |
-| `alt_icao` | `PRIMARY ALTERNATE` page | `ALTN` line | always null | `flight_plans.alt_icao` |
+| `alt_icao` | `PRIMARY ALTERNATE` or `ALTERNATE #n` line | `ALTN` line | always null | `flight_plans.alt_icao` |
 | `source_app` | `foreflight` | `naips` | `ozrunways` | `flight_plans.source_app` |
 
 ## Format detection
@@ -22,6 +22,13 @@ See also: [POST /v1/jobs](../endpoints/v1-jobs-create.md) for how extraction is 
 - **NAIPS:** document starts with `Specific PreFlight Information Bulletin Number:`
 - **OzRunways:** first `ABCD-EFGH` line **and** first `Total: … NM, H:MM ETD: DD Mon HHMM UTC` line
 - **ForeFlight:** all other briefing PDFs in the current set
+
+ForeFlight briefings appear in two layouts:
+
+- **Legacy (custom) layout:** `Recall # DEP ETD DEST ETA` line with ICAO-coded times; route from `Route Report` when no Overflight Report is present.
+- **Standard layout:** `ETE Distance Avg Wind ETD ETA …` block with zulu times on the following line; route from `Overflight Report` (`Route` through `COUNTRY`); alternate from `ALTERNATE #n ICAO`.
+
+Both layouts share the header line: `ABCD — EFGH (Mon DD, YYYY) in …`.
 
 ## Module layout
 

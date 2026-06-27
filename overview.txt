@@ -1,20 +1,98 @@
-jetops-api/
-├── main.py
-├── routers/
-│   ├── analysis.py          # POST /analyze, GET /jobs/{job_id}
-│   ├── jobs.py              # GET /jobs/{job_id}
-│   └── health.py            # GET /health
-├── services/
-│   ├── pdf_extractor.py     # pdfplumber text extraction
-│   ├── notam_parser.py      # Rule-based NOTAM parsing
-│   ├── flight_parser.py     # Rule-based + light AI flight data
-│   ├── notam_analyzer.py    # Claude analysis, async batches
-│   └── job_store.py         # Job state via Supabase
-├── models/
-│   ├── notam.py             # Pydantic: RawNOTAM, AnalysedNOTAM
-│   ├── flight.py            # Pydantic: FlightData
-│   └── job.py               # Pydantic: Job, JobStatus
-└── config.py
+jetops-api-mvp/
+├── app/
+│   ├── main.py                          # FastAPI app; GET /health; request logging middleware
+│   ├── api/
+│   │   ├── dependencies.py              # Dual auth: x-api-key + Bearer JWT (Supabase user)
+│   │   ├── api_logging.py               # Persists /v1 request/response logs to Supabase
+│   │   ├── rate_limit.py                # Rate limits for job creation and analysis start
+│   │   └── v1/
+│   │       ├── router.py                # Mounts all /v1 routes
+│   │       └── endpoints/
+│   │           ├── jobs.py              # POST /v1/jobs — create job, verify PDF, start extraction
+│   │           │                        # POST /v1/jobs/analysis — confirm flight data, start NOTAM analysis
+│   │           └── signup.py            # POST /v1/signup — verify beta signup code
+│   ├── core/
+│   │   ├── config.py                    # Settings from .env / .env.local
+│   │   ├── supabase.py                  # Supabase secret-key client (auth, storage, DB)
+│   │   └── errors.py                    # JobStepError + shared error helpers
+│   ├── schemas/
+│   │   ├── job.py                       # CreateJob, BeginAnalysis requests/responses
+│   │   ├── flight.py                    # FlightData, route/waypoint models
+│   │   ├── notam.py                     # RawNotam extraction models
+│   │   ├── notam_topic.py               # NOTAM topic classification types
+│   │   ├── notam_analysis.py            # Analysed NOTAM output + batch payloads
+│   │   ├── analysis_context.py          # Flight/aircraft/airfield context for analysis
+│   │   ├── pipeline_stage.py            # Timed stage metadata (extraction, analysis)
+│   │   ├── health.py                    # HealthResponse
+│   │   ├── signup.py                    # VerifySignupCode request
+│   │   ├── notam_type_signals.json      # Rule-based NOTAM type signal patterns
+│   │   └── notam_identifier_codes.json  # NOTAM identifier code reference data
+│   ├── repositories/
+│   │   ├── job_repository.py            # analysis_jobs CRUD, PDF verification, status updates
+│   │   ├── flight_repository.py         # Persist extracted flight data
+│   │   ├── notam_repository.py          # Persist raw NOTAMs + topic classifications
+│   │   ├── analysed_notam_repository.py # Persist Claude analysis results
+│   │   ├── analysis_context_repository.py # Load flight/airfield context for analysis
+│   │   └── api_log_repository.py        # Write API request logs
+│   └── services/
+│       ├── job_service.py               # Validate storage path, create job, verify PDF exists
+│       ├── extraction_task.py           # Background: PDF → flight data + NOTAMs + topic classify
+│       ├── analysis_service.py          # Validate job state, build context, mark processing
+│       ├── analysis_task.py             # Background: batch NOTAM analysis, persist results
+│       ├── pdf_extractor.py             # pdfplumber text extraction (two-column handling)
+│       ├── flight_parser.py             # Rule-based ForeFlight/NAIPS/OzRunways flight parsing
+│       ├── notam_parser.py              # Rule-based NOTAM extraction from briefing text
+│       ├── analysis_context.py          # Build flight/aircraft/airfield context for the LLM
+│       ├── notam_analyzer.py            # Claude batch analysis (topic-grouped, concurrent)
+│       ├── notam_topic_prompts.py       # Maps NOTAM topics → specialist system prompts
+│       ├── pipeline_stage.py            # Timed stage logger + pipeline_stage_logs writes
+│       ├── storage_path.py              # Validate Supabase PDF storage path format
+│       └── notam_prompts/                 # Topic-specific Claude system prompts
+│           ├── generic.py                 # Fallback / misc NOTAMs
+│           ├── obstacle.py
+│           ├── airspace.py
+│           ├── airspace_organisation.py
+│           ├── procedure_general.py
+│           ├── approach_procedure.py
+│           ├── aerodrome_general.py
+│           ├── runway.py
+│           ├── lighting.py
+│           ├── comms.py
+│           ├── navaid.py
+│           └── ground_movement.py
+├── tests/                               # Unit + integration tests (pytest)
+├── documentation/                       # Endpoint and service docs
+├── Dockerfile
+└── pyproject.toml
+
+{
+    "total_notams": number,
+    "heuristically_classified_notams": number,
+    "summarisation_batches": number,
+    "categorisation_batches": number,
+    "summarisation_batch_sizes": [
+        number,
+        number...
+    ],
+    "categorisation_batches": [
+        number,
+        number...
+    ],
+    "token_limit_hit": bool,
+    "slowest_batch_ms": number,
+    "summarize_input_tokens": number,
+    "categorize_input_tokens": number,
+    "summarize_output_tokens": number,
+    "categorize_output_tokens": number,
+    "retried_summary_notam_ids": [
+        string,
+        string...
+    ],
+    "retried_category_notam_ids": [
+        string,
+        string...
+    ]
+}
 
 NEED TO EXTRACT FROM PDF:
 

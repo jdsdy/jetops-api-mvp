@@ -71,7 +71,7 @@ class AnalysisContextRepository:
     def fetch_notams(self, job_id: UUID) -> list[dict]:
         result = (
             self._client.table("raw_notams")
-            .select("id, title, notam_id, topic, q, a, b, c, d, e, f, g")
+            .select("id, title, notam_id, topic, topic_confidence, q, a, b, c, d, e, f, g")
             .eq("analysis_job_id", str(job_id))
             .execute()
         )

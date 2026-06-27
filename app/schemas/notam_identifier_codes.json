@@ -1,6 +1,6 @@
 {
     "OBSTACLE": ["OB", "OL", "PO", "WA", "WB", "WC", "WD", "WF", "WG", "WH", "WJ", "WL", "WM", "WP", "WR", "WS", "WT", "WU", "WV", "WW", "WY", "WZ"],
-    "AIRSPACE_ORGANISATION": ["AA", "AC", "AL", "AN", "AR", "AE", "AO", "AT"],
+    "AIRSPACE_ORGANISATION": ["AA", "AC", "AL", "AN", "AR", "AE", "AO", "AT", "AF"],
     "PROCEDURE_GENERAL": ["SA", "SB", "SC", "SE", "SF", "SL", "SO", "SP", "SS", "ST", "SU", "SV", "SY"],
     "AERODROME_GENERAL": ["FA", "FI", "FM", "FO", "FU", "FW", "FS", "FT", "FL", "FF", "PN", "PR", "PZ"],
     "COMMS": ["CA", "CB", "CC", "CD", "CE", "CL", "CM", "CS", "CT"],

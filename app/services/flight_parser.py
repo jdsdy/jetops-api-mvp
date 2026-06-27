@@ -103,12 +103,21 @@ _FF_HEADER_ICAO_DATE = re.compile(
     r"^([A-Z]{4})\s*[—–-]\s*([A-Z]{4})\s*\(([A-Za-z]{3}\s+\d{1,2},\s+\d{4})\)",
     re.MULTILINE,
 )
-_FF_ETD_ETA_LINE = re.compile(
+_FF_LEGACY_ETD_ETA_LINE = re.compile(
     r"^(.+?)/\s*(\d{4})Z\s+([A-Z]{4})\s+.*?/\s*(\d{4})Z",
     re.MULTILINE,
 )
+_FF_STANDARD_ETD_ETA_BLOCK = re.compile(
+    r"^ETE Distance Avg Wind ETD ETA[^\n]*\n([^\n]+)",
+    re.MULTILINE,
+)
+_FF_ZULU_TIME_PAIR = re.compile(r"/\s*(\d{4})Z\s+.*?/\s*(\d{4})Z")
 _ICAO_CODE = re.compile(r"^[A-Z]{4}$")
 _FF_CRUISE_LEVEL = re.compile(r"@\s*(FL\d+)", re.IGNORECASE)
+_FF_OVERFLIGHT_ROUTE_BLOCK = re.compile(
+    r"Overflight Report[^\n]*\n.*?^Route\s*\n(.*?)^COUNTRY",
+    re.MULTILINE | re.DOTALL,
+)
 _FF_ROUTE_REPORT_BLOCK = re.compile(
     r"Route Report\s+Departure Destination STD\s+.*?\nRoute\s+(.*?)\s+RESTRICTIONS",
     re.DOTALL,
@@ -116,6 +125,10 @@ _FF_ROUTE_REPORT_BLOCK = re.compile(
 _FF_PRIMARY_ALTERNATE = re.compile(
     r"PRIMARY ALTERNATE\s*\n(.*?)(?:\nCODED ICAO FLIGHT PLAN|\Z)",
     re.DOTALL,
+)
+_FF_STANDARD_ALTERNATE = re.compile(
+    r"^ALTERNATE #\d+\s+([A-Z]{4})\s*/",
+    re.MULTILINE,
 )
 _FF_ALTERNATE_ICAO = re.compile(r"^([A-Z]{4})\s+BURN:", re.MULTILINE)
 
@@ -131,6 +144,53 @@ def _foreflight_departure_icao_from_prefix(prefix: str) -> str | None:
     return None
 
 
+def _parse_foreflight_etd_eta_zulu(
+    text: str,
+    *,
+    departure_icao: str,
+    arrival_icao: str,
+) -> tuple[str, str]:
+    legacy = _FF_LEGACY_ETD_ETA_LINE.search(text)
+    if legacy:
+        prefix, dept_zulu, line_arr, arr_zulu = legacy.groups()
+        line_dep = _foreflight_departure_icao_from_prefix(prefix.strip())
+        if line_dep is None:
+            raise ValueError("ForeFlight ETD/ETA line not found")
+        if line_dep != departure_icao or line_arr != arrival_icao:
+            raise ValueError("ForeFlight ETD/ETA ICAOs do not match header")
+        return f"{dept_zulu}Z", f"{arr_zulu}Z"
+
+    block = _FF_STANDARD_ETD_ETA_BLOCK.search(text)
+    if block:
+        pair = _FF_ZULU_TIME_PAIR.search(block.group(1))
+        if pair:
+            return f"{pair.group(1)}Z", f"{pair.group(2)}Z"
+
+    raise ValueError("ForeFlight ETD/ETA line not found")
+
+
+def _parse_foreflight_route(
+    text: str,
+    departure_icao: str,
+    arrival_icao: str,
+) -> str:
+    overflight = _FF_OVERFLIGHT_ROUTE_BLOCK.search(text)
+    if overflight:
+        route = " ".join(
+            line.strip()
+            for line in overflight.group(1).strip().splitlines()
+            if line.strip()
+        )
+        return _strip_route_endpoints(route, departure_icao, arrival_icao)
+
+    route_match = _FF_ROUTE_REPORT_BLOCK.search(text)
+    if not route_match:
+        raise ValueError("ForeFlight route not found")
+
+    route = " ".join(route_match.group(1).split())
+    return _strip_route_endpoints(route, departure_icao, arrival_icao)
+
+
 def _parse_foreflight(text: str) -> FlightData:
     header = _FF_HEADER_ICAO_DATE.search(text)
     if not header:
@@ -139,21 +199,15 @@ def _parse_foreflight(text: str) -> FlightData:
     departure_icao, arrival_icao, date_fragment = header.groups()
     flight_date = _parse_foreflight_date(date_fragment)
 
-    etd_eta = _FF_ETD_ETA_LINE.search(text)
-    if not etd_eta:
-        raise ValueError("ForeFlight ETD/ETA line not found")
-
-    prefix, dept_zulu, line_arr, arr_zulu = etd_eta.groups()
-    line_dep = _foreflight_departure_icao_from_prefix(prefix.strip())
-    if line_dep is None:
-        raise ValueError("ForeFlight ETD/ETA line not found")
-    if line_dep != departure_icao or line_arr != arrival_icao:
-        raise ValueError("ForeFlight ETD/ETA ICAOs do not match header")
-
+    dept_zulu, arr_zulu = _parse_foreflight_etd_eta_zulu(
+        text,
+        departure_icao=departure_icao,
+        arrival_icao=arrival_icao,
+    )
     planned_dept_time, planned_arr_time = _build_foreflight_datetimes(
         flight_date,
-        f"{dept_zulu}Z",
-        f"{arr_zulu}Z",
+        dept_zulu,
+        arr_zulu,
     )
 
     cruise_match = _FF_CRUISE_LEVEL.search(text)
@@ -161,15 +215,7 @@ def _parse_foreflight(text: str) -> FlightData:
         raise ValueError("ForeFlight cruise level not found")
     cruise_level = _normalize_cruise(cruise_match.group(1))
 
-    route_match = _FF_ROUTE_REPORT_BLOCK.search(text)
-    if not route_match:
-        raise ValueError("ForeFlight Route Report section not found")
-
-    route = _strip_route_endpoints(
-        " ".join(route_match.group(1).split()),
-        departure_icao,
-        arrival_icao,
-    )
+    route = _parse_foreflight_route(text, departure_icao, arrival_icao)
 
     return FlightData(
         departure_icao=departure_icao,
@@ -198,12 +244,17 @@ def _strip_route_endpoints(
 
 def _parse_foreflight_alternate(text: str) -> str | None:
     section = _FF_PRIMARY_ALTERNATE.search(text)
-    if not section:
-        return None
+    if section:
+        first_line = section.group(1).strip().splitlines()[0]
+        match = _FF_ALTERNATE_ICAO.match(first_line)
+        if match:
+            return match.group(1)
 
-    first_line = section.group(1).strip().splitlines()[0]
-    match = _FF_ALTERNATE_ICAO.match(first_line)
-    return match.group(1) if match else None
+    standard = _FF_STANDARD_ALTERNATE.search(text)
+    if standard:
+        return standard.group(1)
+
+    return None
 
 
 # ---------------------------------------------------------------------------
