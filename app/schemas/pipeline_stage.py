@@ -6,7 +6,7 @@ from pydantic import BaseModel
 from app.schemas.analysis_context import AircraftContext, AirfieldContext, FlightContext
 from app.schemas.flight import FlightData, PlanSource
 from app.schemas.notam import RawNotam
-from app.schemas.notam_analysis import BatchAnalysisResult
+from app.schemas.notam_analysis import AnalysisJobResult, BatchAnalysisResult, BatchCallStats
 
 StageName = Literal[
     "pdf_extraction",
@@ -54,16 +54,21 @@ class BuildContextObjectMetadata(BaseModel):
 
 
 class NotamAnalysisMetadata(BaseModel):
-    batches: int
-    notams_analysed: int
-    model: str
-    batch_sizes: list[int]
+    total_notams: int
+    heuristically_classified_notams: int
+    summarisation_batches: int
+    categorisation_batches: int
+    summarisation_batch_sizes: list[int]
+    categorisation_batch_sizes: list[int]
     token_limit_hit: bool
     slowest_batch_ms: int
-    input_tokens: int
-    output_tokens: int
+    summarize_input_tokens: int
+    categorize_input_tokens: int
+    summarize_output_tokens: int
+    categorize_output_tokens: int
     est_cost: float
-    retried_notam_ids: list[str] | None = None
+    retried_summary_notam_ids: list[str] = []
+    retried_category_notam_ids: list[str] = []
 
 
 def _airfield_full_data_found(airfield: AirfieldContext) -> bool:
@@ -86,13 +91,85 @@ def build_context_object_metadata(flight: FlightContext) -> BuildContextObjectMe
     )
 
 
+def _estimate_batch_stats_cost(
+    batch_stats: list[BatchCallStats],
+    *,
+    default_input_cost_per_m: float,
+    default_output_cost_per_m: float,
+) -> float:
+    total = 0.0
+    for stat in batch_stats:
+        input_rate = (
+            stat.input_cost_per_m
+            if stat.input_cost_per_m is not None
+            else default_input_cost_per_m
+        )
+        output_rate = (
+            stat.output_cost_per_m
+            if stat.output_cost_per_m is not None
+            else default_output_cost_per_m
+        )
+        total += stat.input_tokens * input_rate / 1_000_000
+        total += stat.output_tokens * output_rate / 1_000_000
+    return total
+
+
 def build_notam_analysis_metadata(
+    job_result: AnalysisJobResult,
+    *,
+    categorize_input_cost_per_m: float,
+    categorize_output_cost_per_m: float,
+    summarize_input_cost_per_m: float,
+    summarize_output_cost_per_m: float,
+    retried_category_notam_ids: list[str] | None = None,
+    retried_summary_notam_ids: list[str] | None = None,
+) -> NotamAnalysisMetadata:
+    category_result = job_result.category_result
+    summary_result = job_result.summary_result
+    categorize_input_tokens = category_result.input_tokens
+    categorize_output_tokens = category_result.output_tokens
+    summarize_input_tokens = summary_result.input_tokens
+    summarize_output_tokens = summary_result.output_tokens
+    est_cost = (
+        _estimate_batch_stats_cost(
+            category_result.batch_stats,
+            default_input_cost_per_m=categorize_input_cost_per_m,
+            default_output_cost_per_m=categorize_output_cost_per_m,
+        )
+        + summarize_input_tokens * summarize_input_cost_per_m / 1_000_000
+        + summarize_output_tokens * summarize_output_cost_per_m / 1_000_000
+    )
+    slowest_batch_ms = max(
+        category_result.slowest_batch_ms,
+        summary_result.slowest_batch_ms,
+    )
+    return NotamAnalysisMetadata(
+        total_notams=len(job_result.results),
+        heuristically_classified_notams=job_result.heuristic_category_count,
+        summarisation_batches=summary_result.batches,
+        categorisation_batches=category_result.batches,
+        summarisation_batch_sizes=summary_result.batch_sizes,
+        categorisation_batch_sizes=category_result.batch_sizes,
+        token_limit_hit=job_result.token_limit_hit,
+        slowest_batch_ms=slowest_batch_ms,
+        categorize_input_tokens=categorize_input_tokens,
+        categorize_output_tokens=categorize_output_tokens,
+        summarize_input_tokens=summarize_input_tokens,
+        summarize_output_tokens=summarize_output_tokens,
+        est_cost=est_cost,
+        retried_category_notam_ids=retried_category_notam_ids or [],
+        retried_summary_notam_ids=retried_summary_notam_ids or [],
+    )
+
+
+def build_notam_analysis_metadata_from_batch(
     batch_result: BatchAnalysisResult,
     *,
     input_cost_per_m: float,
     output_cost_per_m: float,
     retried_notam_ids: list[str] | None = None,
 ) -> NotamAnalysisMetadata:
+    """Backward-compatible helper for tests that only exercise categorization."""
     input_tokens = batch_result.input_tokens
     output_tokens = batch_result.output_tokens
     est_cost = (
@@ -100,16 +177,21 @@ def build_notam_analysis_metadata(
         + output_tokens * output_cost_per_m / 1_000_000
     )
     return NotamAnalysisMetadata(
-        batches=batch_result.batches,
-        notams_analysed=batch_result.notams_analysed,
-        model=batch_result.model,
-        batch_sizes=batch_result.batch_sizes,
+        total_notams=batch_result.notams_analysed,
+        heuristically_classified_notams=0,
+        summarisation_batches=0,
+        categorisation_batches=batch_result.batches,
+        summarisation_batch_sizes=[],
+        categorisation_batch_sizes=batch_result.batch_sizes,
         token_limit_hit=batch_result.token_limit_hit,
         slowest_batch_ms=batch_result.slowest_batch_ms,
-        input_tokens=input_tokens,
-        output_tokens=output_tokens,
+        categorize_input_tokens=input_tokens,
+        categorize_output_tokens=output_tokens,
+        summarize_input_tokens=0,
+        summarize_output_tokens=0,
         est_cost=est_cost,
-        retried_notam_ids=retried_notam_ids,
+        retried_category_notam_ids=retried_notam_ids or [],
+        retried_summary_notam_ids=[],
     )
 
 

@@ -20,22 +20,36 @@ from app.services.pdf_extractor import extract_pdf_text
 from app.services.pipeline_stage import PipelineStageLogger
 
 
-def _classify_inserted_notams(
-    inserted: list[dict],
+def _identify_notam_topics(
     notams: list[RawNotam],
-) -> tuple[list[tuple[int, str, int]], int]:
-    results: list[tuple[int, str, int]] = []
+) -> tuple[list[ClassificationResult], int]:
+    classifications: list[ClassificationResult] = []
     errors = 0
 
-    for row, notam in zip(inserted, notams, strict=True):
+    for notam in notams:
         try:
-            classification = classify_notam(notam)
+            classifications.append(classify_notam(notam))
         except Exception:
-            classification = ClassificationResult(topic=MISC_TOPIC, confidence=0)
+            classifications.append(
+                ClassificationResult(topic=MISC_TOPIC, confidence=0)
+            )
             errors += 1
-        results.append((row["id"], classification.topic, classification.confidence))
 
-    return results, errors
+    return classifications, errors
+
+
+def _merge_classified_notams(
+    notams: list[RawNotam],
+    classifications: list[ClassificationResult],
+) -> list[tuple[RawNotam, ClassificationResult]]:
+    return list(zip(notams, classifications, strict=True))
+
+
+def _classification_metadata_rows(inserted: list[dict]) -> list[tuple[int, str, int]]:
+    return [
+        (row["id"], row["topic"], row["topic_confidence"])
+        for row in inserted
+    ]
 
 
 def run_extraction(job_id: UUID, flight_plan_id: UUID, storage_path: str) -> None:
@@ -67,21 +81,21 @@ def run_extraction(job_id: UUID, flight_plan_id: UUID, storage_path: str) -> Non
 
         with stage_logger.track("notam_parse") as notam_stage:
             notams = extract_notams(pdf_result.text)
-            inserted = notam_repository.insert_notams(job_id, flight_plan_id, notams)
             notam_stage.metadata = build_notam_parse_metadata(
                 notams,
                 flight_data.source_app,
             )
 
         with stage_logger.track("notam_topic_classification") as topic_stage:
-            classification_results, error_count = _classify_inserted_notams(
-                inserted,
-                notams,
+            classifications, error_count = _identify_notam_topics(notams)
+            classified_notams = _merge_classified_notams(notams, classifications)
+            inserted = notam_repository.insert_classified_notams(
+                job_id,
+                flight_plan_id,
+                classified_notams,
             )
-            if classification_results:
-                notam_repository.update_notam_classification(classification_results)
             topic_stage.metadata = build_notam_topic_classification_metadata(
-                classification_results,
+                _classification_metadata_rows(inserted),
                 classification_errors=error_count,
             )
 

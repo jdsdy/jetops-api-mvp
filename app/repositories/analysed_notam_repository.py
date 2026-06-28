@@ -37,15 +37,17 @@ class AnalysedNotamRepository:
         rows: list[tuple[int, NotamResult]],
     ) -> None:
         for raw_notam_id, result in rows:
+            update_fields: dict = {}
+            if result.category is not None:
+                update_fields["category"] = result.category
+            if result.summary is not None:
+                update_fields["summary"] = result.summary
+            if not update_fields:
+                continue
+            update_fields["did_error"] = False
             (
                 self._client.table("analysed_notams")
-                .update(
-                    {
-                        "category": result.category,
-                        "summary": result.summary,
-                        "did_error": False,
-                    }
-                )
+                .update(update_fields)
                 .eq("anaysis_job_id", str(analysis_job_id))
                 .eq("notam_id", raw_notam_id)
                 .execute()

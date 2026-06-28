@@ -8,9 +8,44 @@ from app.repositories.notam_repository import NotamRepository
 from app.schemas.flight import FlightData
 from app.schemas.notam import RawNotam
 from app.schemas.notam_topic import ClassificationResult
-from app.services.extraction_task import run_extraction
+from app.services.extraction_task import (
+    _identify_notam_topics,
+    _merge_classified_notams,
+    run_extraction,
+)
 from app.services.pdf_extractor import PdfExtractionResult
 from tests.conftest import PLAN_ID
+
+
+def test_identify_notam_topics_classifies_each_notam() -> None:
+    notams = [
+        RawNotam(notam_id="C0481/26 NOTAMN"),
+        RawNotam(notam_id="C0478/26 NOTAMN"),
+    ]
+
+    with patch(
+        "app.services.extraction_task.classify_notam",
+        side_effect=[
+            ClassificationResult(topic="RUNWAY", confidence=100),
+            ClassificationResult(topic="OBSTACLE", confidence=30),
+        ],
+    ):
+        classifications, errors = _identify_notam_topics(notams)
+
+    assert classifications == [
+        ClassificationResult(topic="RUNWAY", confidence=100),
+        ClassificationResult(topic="OBSTACLE", confidence=30),
+    ]
+    assert errors == 0
+
+
+def test_merge_classified_notams_pairs_notam_with_classification() -> None:
+    notam = RawNotam(notam_id="C0481/26 NOTAMN")
+    classification = ClassificationResult(topic="RUNWAY", confidence=100)
+
+    merged = _merge_classified_notams([notam], [classification])
+
+    assert merged == [(notam, classification)]
 
 
 def test_run_extraction_success_persists_flight_notams_and_status() -> None:
@@ -33,9 +68,10 @@ def test_run_extraction_success_persists_flight_notams_and_status() -> None:
         source_app="foreflight",
     )
     notams = [RawNotam(notam_id="C0481/26 NOTAMN", q="YMMM/QMDCH/IV/NBO/A/000/999/")]
-    inserted = [{"id": 42}]
+    classification = ClassificationResult(topic="RUNWAY", confidence=100)
+    inserted = [{"id": 42, "topic": "RUNWAY", "topic_confidence": 100}]
 
-    mock_notam_repo.insert_notams.return_value = inserted
+    mock_notam_repo.insert_classified_notams.return_value = inserted
     mock_stage_repo = MagicMock()
 
     with (
@@ -67,7 +103,7 @@ def test_run_extraction_success_persists_flight_notams_and_status() -> None:
         ),
         patch(
             "app.services.extraction_task.classify_notam",
-            return_value=ClassificationResult(topic="RUNWAY", confidence=100),
+            return_value=classification,
         ),
     ):
         run_extraction(job_id, PLAN_ID, "org/flight/plan/file.pdf")
@@ -78,9 +114,10 @@ def test_run_extraction_success_persists_flight_notams_and_status() -> None:
         PLAN_ID,
         flight_data,
     )
-    mock_notam_repo.insert_notams.assert_called_once_with(job_id, PLAN_ID, notams)
-    mock_notam_repo.update_notam_classification.assert_called_once_with(
-        [(42, "RUNWAY", 100)],
+    mock_notam_repo.insert_classified_notams.assert_called_once_with(
+        job_id,
+        PLAN_ID,
+        [(notams[0], classification)],
     )
     mock_job_repo.update_status.assert_called_once_with(
         job_id,
@@ -118,5 +155,5 @@ def test_run_extraction_failure_marks_job_failed() -> None:
 
     mock_job_repo.mark_failed.assert_called_once_with(job_id, "parse failed")
     mock_job_repo.update_status.assert_not_called()
-    mock_notam_repo.insert_notams.assert_not_called()
+    mock_notam_repo.insert_classified_notams.assert_not_called()
     mock_stage_repo.insert_log.assert_not_called()

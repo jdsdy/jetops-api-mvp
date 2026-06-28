@@ -1,6 +1,8 @@
 # NOTAM topic classification
 
-Heuristic topic assignment for parsed NOTAMs. Runs during extraction (after `notam_parse`, before `awaiting_confirmation`) and writes `raw_notams.topic` and `raw_notams.topic_confidence`.
+Heuristic topic assignment for parsed NOTAMs. Runs during extraction (after `notam_parse`, before `awaiting_confirmation`).
+
+Flow: identify topics in memory → merge with parsed NOTAM fields → single bulk insert to `raw_notams` (including `topic` and `topic_confidence`).
 
 See also: [NOTAM extraction](notam-extraction.md) and [NOTAM LLM analysis](notam-analysis.md).
 
@@ -8,11 +10,34 @@ See also: [NOTAM extraction](notam-extraction.md) and [NOTAM LLM analysis](notam
 
 | NOTAM source | Condition | Method |
 |---|---|---|
-| ForeFlight standard | `q` field populated | Q-code subject lookup |
+| ForeFlight standard | `q` field populated | Triple-channel vote (Q, E-only, Title-only) |
 | ForeFlight condensed, NAIPS, OzRunways | `q` is null | E-line (and title) heuristic scoring |
 | Any | no confident match | `MISC` |
 
-ForeFlight NOTAMs with a Q line do **not** fall back to E-line heuristics when the Q code is unmapped.
+## ForeFlight triple-channel vote
+
+When `q` is present, three independent channels classify the NOTAM:
+
+| Channel | Input | Method |
+|---|---|---|
+| Q | `notam.q` | Q-code subject lookup |
+| E | `notam.e` only | E-line heuristic scoring (`title=None`) |
+| Title | `notam.title` only | Title heuristic scoring via [`notam_title_signals.json`](../../app/schemas/notam_title_signals.json) |
+
+`resolve_foreflight_vote` applies the voting table below. Confidence is the **rule score**, not the underlying E-line signal sum.
+
+| Condition | Confidence | Final topic |
+|---|---|---|
+| Q = E = Title (same non-MISC) | 100 | that topic |
+| Q = Title, E = MISC | 80 | Q/Title topic |
+| Q = Title, E disagrees | 40 | Q/Title topic |
+| E = Title, Q disagrees | 70 | E/Title topic |
+| Q = E, Title disagrees | 50 | Q/E topic |
+| Q identifies, E = Title = MISC | 50 | Q topic |
+| E identifies, Q = Title = MISC | 30 | E topic |
+| Title identifies, Q = E = MISC | 30 | **MISC** (title alone never wins) |
+| all MISC | 0 | MISC |
+| all disagree (3 distinct non-MISC) | 0 | MISC |
 
 ## Q-code lookup
 
@@ -33,10 +58,10 @@ Signals live in [`app/schemas/notam_type_signals.json`](../../app/schemas/notam_
 
 | Setting | Default |
 |---|---|
-| `NOTAM_TOPIC_STRONG_SCORE` | 10 |
-| `NOTAM_TOPIC_MODERATE_SCORE` | 5 |
-| `NOTAM_TOPIC_WEAK_SCORE` | 2 |
-| `NOTAM_TOPIC_SCORE_CUTOFF` | 15 |
+| `NOTAM_TOPIC_STRONG_SCORE` | 15 |
+| `NOTAM_TOPIC_MODERATE_SCORE` | 8 |
+| `NOTAM_TOPIC_WEAK_SCORE` | 3 |
+| `NOTAM_TOPIC_SCORE_CUTOFF` | 23 |
 
 Signals must match as whole tokens/phrases (alphanumeric boundaries). `HELLO` does not match inside `HELLOWORLD`.
 
@@ -44,6 +69,21 @@ Resolution:
 
 - Exactly one topic ≥ cutoff → that topic; confidence = its score
 - Zero or multiple qualifying topics → `MISC`; confidence = highest topic score (useful for near-miss debugging)
+
+## Title heuristic scoring
+
+Title-only matching for the ForeFlight triple vote uses [`app/schemas/notam_title_signals.json`](../../app/schemas/notam_title_signals.json). Each topic has `strong` and `moderate` signal lists only (no `weak`).
+
+Qualification per topic:
+
+- **`exact`** — whole title must match an entry exactly (case-insensitive, trimmed). Checked first; when exactly one topic exact-matches, strong/moderate rules are skipped
+- **One strong** signal match → topic qualifies
+- **No strong** match → **two or more moderate** signal matches required to qualify
+- Otherwise → topic does not qualify
+
+Exactly one qualifying topic wins; zero or multiple qualifying topics → `MISC`. Confidence uses `NOTAM_TOPIC_STRONG_SCORE` for a strong match, or `moderate_count × NOTAM_TOPIC_MODERATE_SCORE` when qualifying via moderates only. A lone moderate match returns `MISC` with a single moderate score for near-miss debugging.
+
+Condensed / NAIPS paths without a Q line still combine E-line + title text against `notam_type_signals.json`.
 
 ## Specialist analysis prompts
 
@@ -53,8 +93,8 @@ The general (MISC) system prompt lives in [`app/services/notam_prompts/generic.p
 
 | Module | Role |
 |---|---|
-| [`app/services/notam_topic_classifier.py`](../../app/services/notam_topic_classifier.py) | Q-code and E-line classification |
-| [`app/repositories/notam_repository.py`](../../app/repositories/notam_repository.py) | Persist `topic` and `topic_confidence` |
+| [`app/services/notam_topic_classifier.py`](../../app/services/notam_topic_classifier.py) | Q-code, E-line, and ForeFlight triple vote |
+| [`app/repositories/notam_repository.py`](../../app/repositories/notam_repository.py) | Bulk insert classified NOTAM rows |
 | [`app/services/extraction_task.py`](../../app/services/extraction_task.py) | `notam_topic_classification` pipeline stage |
 
 ## Pipeline stage log

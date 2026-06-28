@@ -1,13 +1,13 @@
 {
     "OBSTACLE": ["OB", "OL", "PO", "WA", "WB", "WC", "WD", "WF", "WG", "WH", "WJ", "WL", "WM", "WP", "WR", "WS", "WT", "WU", "WV", "WW", "WY", "WZ"],
-    "AIRSPACE_ORGANISATION": ["AA", "AC", "AL", "AN", "AR", "AE", "AO", "AT"],
+    "AIRSPACE_ORGANISATION": ["AA", "AC", "AL", "AN", "AR", "AE", "AO", "AT", "AF", "AH", "AX"],
     "PROCEDURE_GENERAL": ["SA", "SB", "SC", "SE", "SF", "SL", "SO", "SP", "SS", "ST", "SU", "SV", "SY"],
-    "AERODROME_GENERAL": ["FA", "FI", "FM", "FO", "FU", "FW", "FS", "FT", "FL", "FF", "PN", "PR", "PZ"],
+    "AERODROME_GENERAL": ["FA", "FI", "FM", "FO", "FU", "FW", "FH", "FS", "FT", "FP", "FL", "FF", "PN", "PR", "PZ"],
     "COMMS": ["CA", "CB", "CC", "CD", "CE", "CL", "CM", "CS", "CT"],
     "LIGHTING": ["LA", "LB", "LC", "LD", "LE", "LF", "LG", "LH", "LI", "LJ", "LM", "LP", "LR", "LS", "LT", "LU", "LV", "LW", "LX", "LY", "LZ"],
     "GROUND_MOVEMENT": ["MX", "MA", "MB", "MC", "MG", "MK", "MO", "MP", "MM", "MY", "MS", "FG", "MN"],
     "AIRSPACE": ["RA", "RD", "RM", "RO", "RP", "RR", "RT", "WE"],
-    "NAVAID": ["NA", "NB", "NC", "ND", "NF", "NL", "NM", "NN", "NO", "NT", "NV", "NX"],
-    "APPROACH_PROCEDURE": ["PA", "PB", "PC", "PF", "PH", "PI", "PK", "PM", "PT", "PU", "PX", "IC", "CG", "CP", "ID", "IG", "II", "IL", "IM", "IN", "IO", "IS", "IT", "IU", "IW", "IX", "IY", "LK"],
+    "NAVAID": ["NA", "NB", "NC", "ND", "NF", "NL", "NM", "NN", "NO", "NT", "NV", "NX", "GW", "GA"],
+    "APPROACH_PROCEDURE": ["PA", "PB", "PC", "PD", "PF", "PH", "PI", "PK", "PM", "PT", "PU", "PX", "IC", "CG", "CP", "ID", "IG", "II", "IL", "IM", "IN", "IO", "IS", "IT", "IU", "IW", "IX", "IY", "LK"],
     "RUNWAY": ["MR", "MT", "MB", "MD", "MH"]
 }

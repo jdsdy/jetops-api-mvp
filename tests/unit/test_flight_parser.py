@@ -122,6 +122,63 @@ def test_foreflight_etd_eta_line_raises_when_departure_not_icao() -> None:
         parse_flight_data(text)
 
 
+def test_yssy_ypph_standard_foreflight_fields() -> None:
+    data = parse_flight_data(load_txt("618f85e5-2377-9370-804b-9d46b916c212.txt"))
+
+    assert data.departure_icao == "YSSY"
+    assert data.arrival_icao == "YPPH"
+    assert data.planned_dept_time == datetime(2026, 6, 24, 11, 10, tzinfo=UTC)
+    assert data.planned_arr_time == datetime(2026, 6, 24, 15, 30, tzinfo=UTC)
+    assert data.route == "N0473F400 DCT"
+    assert data.cruise_level == "FL400"
+    assert data.alt_icao == "YBLN"
+    assert data.source_app == "foreflight"
+
+
+def test_foreflight_standard_etd_eta_line_without_recall_prefix() -> None:
+    text = (
+        "YSSY — YPPH (Jun 24, 2026) in N254HN (BCS1 - A220-100) IFR Created Jun 24 2026 1100Z\n"
+        "250/290 KIAS/M0.76 - Max Cruise Speed @ FL400 - M0.78/275/250 KIAS\n"
+        "ETE Distance Avg Wind ETD ETA TOW ELW\n"
+        "4h20m 1773NM 49kt head (271°/049) 21:10 AEST / 1110Z 23:30 AWST / 1530Z 100623 lbs 84050 lbs\n"
+        "ALTERNATE #1 YBLN / ROUTE: DCT\n"
+        "Overflight Report YSSY — YPPH (Jun 24, 2026Z) in N254HN (BCS1) IFR Created Jun 24 2026 1100Z\n"
+        "Departure Destination ETD MTOW\n"
+        "YSSY YPPH 2026-06-24 11:10Z 63730 kilograms\n"
+        "Route\n"
+        "N0473F400 DCT\n"
+        "COUNTRY FIR OVERFLIGHTS COSTS\n"
+    )
+    data = parse_flight_data(text)
+
+    assert data.planned_dept_time == datetime(2026, 6, 24, 11, 10, tzinfo=UTC)
+    assert data.planned_arr_time == datetime(2026, 6, 24, 15, 30, tzinfo=UTC)
+    assert data.route == "N0473F400 DCT"
+    assert data.alt_icao == "YBLN"
+
+
+def test_foreflight_overflight_route_spans_multiple_lines() -> None:
+    text = (
+        "YSSY — YPPH (Jun 24, 2026) in N254HN IFR Created Jun 24 2026 1100Z\n"
+        "ETE Distance Avg Wind ETD ETA TOW ELW\n"
+        "4h20m 1773NM 49kt head 21:10 AEST / 1110Z 23:30 AWST / 1530Z 100623 lbs 84050 lbs\n"
+        "@ FL400\n"
+        "Overflight Report YSSY — YPPH (Jun 24, 2026Z) in N254HN IFR Created Jun 24 2026 1100Z\n"
+        "Departure Destination ETD MTOW\n"
+        "YSSY YPPH 2026-06-24 11:10Z 63730 kilograms\n"
+        "Route\n"
+        "N0504F430 BIXAD2 BIXAD Q67 GUDSO\n"
+        "OMLET/N0496F470 B586 XAC XACN\n"
+        "COUNTRY FIR OVERFLIGHTS COSTS\n"
+    )
+    data = parse_flight_data(text)
+
+    assert (
+        data.route
+        == "N0504F430 BIXAD2 BIXAD Q67 GUDSO OMLET/N0496F470 B586 XAC XACN"
+    )
+
+
 # --- NAIPS ---
 
 

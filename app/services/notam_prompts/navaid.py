@@ -42,8 +42,9 @@ Navigation aids (navaids) notams related to information about any navigation aid
 - VORTAC
 - VOR
 - Direction finding stations
+- GNSS
 
-All attempt has been made to avoid providing you with instrument approach navigation aid notams. If you do receive one, you should reject it following the procedure above in handling_unrelated_notams.
+All attempts have been made to avoid providing you with instrument approach navigation aid notams. If you do receive one, it is vital you reject it following the procedure above in handling_unrelated_notams.
 </navaid_notam_information>
 
 <user_inputs>
@@ -135,10 +136,10 @@ Notam schedules may be provided in a variety of formats that are non-standard. S
 </understanding_the_notam_structure>
 
 <handling_navaid_notams>
-Navigation aids should be classified as category 3 without exception. 
+All navigation aid notams should be classified as category 3 except for those related to GNSS which should be classified as category 2.
 </handling_navaid_notams>
 
 <output_format>
-Your output must adhere to the provided JSON schema. Output must include the NOTAM ID, category (1, 2, or 3), and a short plain English summary for each NOTAM analysed. You must output the notam ID for each NOTAM exactly as it is provided to you. Do not omit, or make up notam IDs. Your summary should never reference an internal rule specified in this system prompt. The summary is user facing and should only be relevant to the notam itself, and informative to the flight crew.
+Your output must adhere to the provided JSON schema. Output must include the NOTAM ID and category (1, 2, or 3). You must output the notam ID for each NOTAM exactly as it is provided to you. Do not omit, or make up notam IDs.
 </output_format>
 """

@@ -1,0 +1,166 @@
+{
+    "OBSTACLE": {
+        "strong": [
+            "OBSTACLE",
+            "OBSTACLE ERECTED",
+            "OBSTACLE TRIGGER",
+            "OBSTACLE LIGHTS ON UNSERVICABLE",
+            "UNMANNED AIRCRAFT WILL TAKE PLACE"
+        ],
+        "moderate": [
+            "OBSTRUCTION",
+            "UNLIT",
+            "PARACHUTE JUMPING EXERCISE",
+            "PARAGLIDING OR HANG GLIDING WILL TAKE PLACE",
+            "UNMANNED AIRCRAFT",
+            "BIRDS"
+        ]
+    },
+    "AIRSPACE_ORGANISATION": {
+        "strong": [
+            "MINIMUM ALTITUDE CHANGED",
+            "CONTROL ZONE",
+            "CONTROL AREA",
+            "ATS ROUTE",
+            "AREA NAVIGATION ROUTE",
+            "OCEANIC CONTROL AREA",
+            "AERONAUTICAL INFORMATION SERVICE",
+            "AIRCRAFT ENTRY REQUIREMENTS",
+            "REPORTING POINT CHANGED",
+            "FLIGHT INFORMATION REGION",
+            "SIGNIFICANT POINT"
+        ],
+        "moderate": [],
+        "exact": [
+            "EXERCISES"
+        ]
+    },
+    "PROCEDURE_GENERAL": {
+        "strong": [
+            "FLOW CONTROL CENTRE",
+            "AERODROME CONTROL TOWER",
+            "VOLMET BROADCAST",
+            "AREA CONTROL CENTRE",
+            "APPROACH CONTROL SERVICE",
+            "FLIGHT INFORMATION SERVICE"
+        ],
+        "moderate": []
+    },
+    "AERODROME_GENERAL": {
+        "strong": [
+            "AERODROME LIMITED TO",
+            "AERODROME CONCENTRATION OF BIRDS",
+            "METEOROLOGICAL SERVICE NOT AVAILABLE",
+            "HELIPORT"
+        ],
+        "moderate": [
+            "BIRDS",
+            "SERVICE NOT AVAILABLE",
+            "SERVICE LIMITED"
+        ],
+        "exact": [
+            "AERODROME"
+        ]
+    },
+    "COMMS": {
+        "strong": [
+            "AIR/GROUND FACILITY LIMITED TO",
+            "SECONDARY SURVEILLANCE RADAR",
+            "AIR/GROUND FACILITY SUBJECT TO INTERRUPTION",
+            "SECONDARY SURVEILLANCE RADAR LIMITED TO",
+            "SECONDARY SURVEILLANCE RADAR UNSERVICEABLE",
+            "CONTROLLER-PILOT DATA LINK COMMUNICATIONS LIMITED TO",
+            "CONTROLLER-PILOT DATA LINK COMMUNICATIONS",
+            "AIR/GROUND FACILITY",
+            "AUTOMATIC DEPENDENT SURVEILLANCE - BROADCAST",
+            "EN-ROUTE SURVEILLANCE RADAR",
+            "SELECTIVE CALLING SYSTEM"
+        ],
+        "moderate": [
+            "RADAR",
+            "SURVEILLANCE",
+            "COMMUNICATIONS"
+        ]
+    },
+    "LIGHTING": {
+        "strong": [
+            "APPROACH LIGHTING SYSTEM",
+            "ALL LANDING AREA LIGHTING FACILITIES",
+            "TAXIWAY CENTRE LINE LIGHTS",
+            "TAXIWAY EDGE LIGHTS"
+        ],
+        "moderate": [
+            "LIGHTING",
+            "LIGHTS"
+        ]
+    },
+    "GROUND_MOVEMENT": {
+        "strong": [
+            "TAXIWAY LIMITED TO",
+            "TAXIWAY CLOSED",
+            "APRON"
+        ],
+        "moderate": [
+            "TAXIWAY"
+        ]
+    },
+    "AIRSPACE": {
+        "strong": [
+            "MILITARY OPERATING AREA ACTIVATED",
+            "RESTRICTED AREA ACTIVATED",
+            "RESTRICTED AREA ACTIVE",
+            "RESTRICTED AREA",
+            "RESTRICTED AREA DEACTIVATED",
+            "EXERCISES WILL TAKE PLACE"
+        ],
+        "moderate": [
+            "RESTRICTED",
+            "AIRSPACE"
+        ]
+    },
+    "NAVAID": {
+        "strong": [
+            "NON-DIRECTIONAL RADIO BEACON OPERATING BUT CAUTION ADVISED DUE TO",
+            "NON-DIRECTIONAL RADIO BEACON",
+            "DISTANCE MEASURING EQUIPMENT",
+            "VOR/DME SUBJECT TO INTERRUPTION",
+            "TACAN",
+            "GNSS AREA-WIDE OPERATIONS"
+        ],
+        "moderate": [
+            "NAVAID",
+            "VOR/DME",
+            "NDB"
+        ]
+    },
+    "APPROACH_PROCEDURE": {
+        "strong": [
+            "INSTRUMENT APPROACH PROCEDURE CHANGED",
+            "INSTRUMENT APPROACH PROCEDURE LIMITED TO",
+            "INSTRUMENT APPROACH PROCEDURE",
+            "STANDARD INSTRUMENT DEPARTURE CHANGED",
+            "INSTRUMENT LANDING SYSTEM UNSERVICEABLE",
+            "INSTRUMENT LANDING SYSTEM",
+            "GLIDE PATH (ILS) SUBJECT TO INTERRUPTION",
+            "GLIDE PATH (ILS)",
+            "LOCALIZER (ILS) SUBJECT TO INTERRUPTION"
+        ],
+        "moderate": [
+            "ILS",
+            "LOCALIZER",
+            "GLIDE PATH",
+            "APPROACH",
+            "INSTRUMENT APPROACH",
+            "INSTRUMENT DEPARTURE"
+        ]
+    },
+    "RUNWAY": {
+        "strong": [
+            "RUNWAY CLOSED",
+            "DECLARED DISTANCES CHANGED",
+            "RUNWAY LIMITED TO",
+            "RUNWAY OPERATING BUT CAUTION ADVISED DUE TO"
+        ],
+        "moderate": []
+    }
+}

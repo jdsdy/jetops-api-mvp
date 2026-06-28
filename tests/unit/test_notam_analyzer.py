@@ -8,22 +8,32 @@ from app.schemas.notam_analysis import (
     AnalysisNotamRow,
     BatchAnalysisResult,
     BatchCallStats,
+    CategoryBatchResult,
+    CategoryResult,
     NotamBatchPayload,
     NotamResult,
+    SummaryBatchResult,
+    SummaryResult,
 )
 from app.services.notam_analyzer import (
     GENERAL_ANALYSIS_OUTPUT_JSON_SCHEMA,
     SPECIALIST_ANALYSIS_OUTPUT_JSON_SCHEMA,
+    SUMMARY_OUTPUT_JSON_SCHEMA,
     _analyze_batch,
     _batch_result_outcome,
     _parse_analysis_response,
     _parse_specialist_analysis_response,
+    _summarize_batch,
     analyze_notam_batches,
+    analyze_notam_job,
     build_topic_batches,
+    categorize_notam_batches,
     chunk_notam_batches,
+    chunk_summary_batches,
     group_notam_rows_by_topic,
     map_results_to_raw_notam_ids,
     merge_batch_results,
+    summarize_notam_batches,
 )
 from app.services.notam_topic_prompts import GENERIC
 
@@ -41,8 +51,20 @@ def _flight_context() -> FlightContext:
     )
 
 
-def _notam_row(row_id: int, notam_id: str, *, topic: str | None = None) -> AnalysisNotamRow:
-    return AnalysisNotamRow(id=row_id, notam_id=notam_id, e="Test NOTAM", topic=topic)
+def _notam_row(
+    row_id: int,
+    notam_id: str,
+    *,
+    topic: str | None = None,
+    topic_confidence: int | None = None,
+) -> AnalysisNotamRow:
+    return AnalysisNotamRow(
+        id=row_id,
+        notam_id=notam_id,
+        e="Test NOTAM",
+        topic=topic,
+        topic_confidence=topic_confidence,
+    )
 
 
 def test_chunk_notam_batches_splits_into_groups_of_ten() -> None:
@@ -129,18 +151,18 @@ def test_analyze_notam_batches_aggregates_tokens_and_detects_limit() -> None:
     def fake_analyze(batch, *, client, settings, system_prompt=None):
         if batch.notams[0].id == 1:
             return (
-                [NotamResult(notam_id="C0481/26 NOTAMN", category=1, summary="A")],
+                [CategoryResult(notam_id="C0481/26 NOTAMN", category=1)],
                 BatchCallStats(
                     duration_ms=100,
                     input_tokens=1000,
                     output_tokens=500,
                     batch_size=1,
                 ),
-            set(),
-            set(),
-        )
+                set(),
+                set(),
+            )
         return (
-            [NotamResult(notam_id="C0478/26 NOTAMN", category=2, summary="B")],
+            [CategoryResult(notam_id="C0478/26 NOTAMN", category=2)],
             BatchCallStats(
                 duration_ms=200,
                 input_tokens=2000,
@@ -152,7 +174,7 @@ def test_analyze_notam_batches_aggregates_tokens_and_detects_limit() -> None:
         )
 
     with patch(
-        "app.services.notam_analyzer._analyze_batch",
+        "app.services.notam_analyzer._categorize_batch",
         side_effect=fake_analyze,
     ):
         result = analyze_notam_batches(
@@ -171,14 +193,14 @@ def test_analyze_notam_batches_aggregates_tokens_and_detects_limit() -> None:
 
 def test_parse_specialist_analysis_response_extracts_rejected_ids() -> None:
     payload = (
-        '{"results": [{"notam_id": "C0481/26 NOTAMN", "category": 1, "summary": "Runway"}],'
+        '{"results": [{"notam_id": "C0481/26 NOTAMN", "category": 1}],'
         '"rejected_notam_ids": ["C0478/26 NOTAMN"]}'
     )
 
     results, rejected = _parse_specialist_analysis_response(payload)
 
     assert results == [
-        NotamResult(notam_id="C0481/26 NOTAMN", category=1, summary="Runway")
+        NotamResult(notam_id="C0481/26 NOTAMN", category=1)
     ]
     assert rejected == ["C0478/26 NOTAMN"]
 
@@ -193,7 +215,7 @@ def test_batch_result_outcome_treats_rejected_ids_as_not_missing() -> None:
         ],
         topic="OBSTACLE",
     )
-    results = [NotamResult(notam_id="C0481/26 NOTAMN", category=1, summary="A")]
+    results = [NotamResult(notam_id="C0481/26 NOTAMN", category=1)]
 
     valid_results, missing, rejected = _batch_result_outcome(
         batch,
@@ -228,7 +250,7 @@ def test_analyze_notam_batches_collects_rejected_notam_ids() -> None:
 
     def fake_analyze(current_batch, *, client, settings, system_prompt=None):
         return (
-            [NotamResult(notam_id="C0481/26 NOTAMN", category=1, summary="A")],
+            [CategoryResult(notam_id="C0481/26 NOTAMN", category=1)],
             BatchCallStats(
                 duration_ms=100,
                 input_tokens=100,
@@ -240,7 +262,7 @@ def test_analyze_notam_batches_collects_rejected_notam_ids() -> None:
         )
 
     with (
-        patch("app.services.notam_analyzer._analyze_batch", side_effect=fake_analyze),
+        patch("app.services.notam_analyzer._categorize_batch", side_effect=fake_analyze),
         patch(
             "app.services.notam_analyzer.get_system_prompt",
             return_value="specialist prompt",
@@ -254,12 +276,12 @@ def test_analyze_notam_batches_collects_rejected_notam_ids() -> None:
 
 
 def test_parse_analysis_response_validates_json_array() -> None:
-    payload = '[{"notam_id": "C0481/26 NOTAMN", "category": 1, "summary": "Runway"}]'
+    payload = '[{"notam_id": "C0481/26 NOTAMN", "category": 1}]'
 
     results = _parse_analysis_response(payload)
 
     assert results == [
-        NotamResult(notam_id="C0481/26 NOTAMN", category=1, summary="Runway")
+        NotamResult(notam_id="C0481/26 NOTAMN", category=1)
     ]
 
 
@@ -311,7 +333,7 @@ def test_analyze_batch_uses_misc_prompt_by_default() -> None:
     mock_text_block = MagicMock()
     mock_text_block.type = "text"
     mock_text_block.text = (
-        '[{"notam_id": "C0481/26 NOTAMN", "category": 1, "summary": "Runway"}]'
+        '[{"notam_id": "C0481/26 NOTAMN", "category": 1}]'
     )
     mock_response = MagicMock()
     mock_response.content = [mock_text_block]
@@ -323,7 +345,7 @@ def test_analyze_batch_uses_misc_prompt_by_default() -> None:
     results, stats, missing, rejected = _analyze_batch(batch, client=mock_client, settings=settings)
 
     assert results == [
-        NotamResult(notam_id="C0481/26 NOTAMN", category=1, summary="Runway")
+        CategoryResult(notam_id="C0481/26 NOTAMN", category=1)
     ]
     assert missing == set()
     assert rejected == set()
@@ -360,7 +382,7 @@ def test_analyze_batch_passes_custom_system_prompt() -> None:
     mock_text_block = MagicMock()
     mock_text_block.type = "text"
     mock_text_block.text = (
-        '{"results": [{"notam_id": "C0481/26 NOTAMN", "category": 1, "summary": "Runway"}],'
+        '{"results": [{"notam_id": "C0481/26 NOTAMN", "category": 1}],'
         '"rejected_notam_ids": []}'
     )
     mock_response = MagicMock()
@@ -383,6 +405,123 @@ def test_analyze_batch_passes_custom_system_prompt() -> None:
     assert call_kwargs["system"][0]["text"] == custom_prompt
 
 
+def test_analyze_batch_obstacle_uses_haiku_without_thinking() -> None:
+    flight = _flight_context()
+    batch = NotamBatchPayload(
+        flight=flight,
+        notams=[_notam_row(1, "C0481/26 NOTAMN", topic="OBSTACLE")],
+        topic="OBSTACLE",
+    )
+    settings = Settings(
+        API_KEY="k",
+        SUPABASE_URL="https://example.supabase.co",
+        SUPABASE_SECRET_KEY="s",
+        ANTHROPIC_API_KEY="a",
+        UPSTASH_REDIS_REST_URL="https://example.upstash.io",
+        UPSTASH_REDIS_REST_TOKEN="token",
+        BETA_SIGNUP_CODE="test-signup-code",
+    )
+    mock_text_block = MagicMock()
+    mock_text_block.type = "text"
+    mock_text_block.text = (
+        '{"results": [{"notam_id": "C0481/26 NOTAMN", "category": 3}],'
+        '"rejected_notam_ids": []}'
+    )
+    mock_response = MagicMock()
+    mock_response.content = [mock_text_block]
+    mock_response.usage.input_tokens = 10
+    mock_response.usage.output_tokens = 5
+    mock_client = MagicMock()
+    mock_client.messages.create.return_value = mock_response
+
+    _analyze_batch(batch, client=mock_client, settings=settings)
+
+    call_kwargs = mock_client.messages.create.call_args.kwargs
+    assert call_kwargs["model"] == settings.NOTAM_CATEGORIZE_HAIKU_MODEL
+    assert call_kwargs["max_tokens"] == settings.NOTAM_CATEGORIZE_HAIKU_MAX_TOKENS
+    assert call_kwargs["thinking"] == {"type": "disabled"}
+    assert call_kwargs["output_config"] == {
+        "format": {
+            "type": "json_schema",
+            "schema": SPECIALIST_ANALYSIS_OUTPUT_JSON_SCHEMA,
+        },
+    }
+
+
+def test_analyze_batch_runway_uses_sonnet_with_adaptive_thinking() -> None:
+    flight = _flight_context()
+    batch = NotamBatchPayload(
+        flight=flight,
+        notams=[_notam_row(1, "C0481/26 NOTAMN", topic="RUNWAY")],
+        topic="RUNWAY",
+    )
+    settings = Settings(
+        API_KEY="k",
+        SUPABASE_URL="https://example.supabase.co",
+        SUPABASE_SECRET_KEY="s",
+        ANTHROPIC_API_KEY="a",
+        UPSTASH_REDIS_REST_URL="https://example.upstash.io",
+        UPSTASH_REDIS_REST_TOKEN="token",
+        BETA_SIGNUP_CODE="test-signup-code",
+    )
+    mock_text_block = MagicMock()
+    mock_text_block.type = "text"
+    mock_text_block.text = (
+        '{"results": [{"notam_id": "C0481/26 NOTAMN", "category": 1}],'
+        '"rejected_notam_ids": []}'
+    )
+    mock_response = MagicMock()
+    mock_response.content = [mock_text_block]
+    mock_response.usage.input_tokens = 10
+    mock_response.usage.output_tokens = 5
+    mock_client = MagicMock()
+    mock_client.messages.create.return_value = mock_response
+
+    _analyze_batch(batch, client=mock_client, settings=settings)
+
+    call_kwargs = mock_client.messages.create.call_args.kwargs
+    assert call_kwargs["model"] == settings.NOTAM_ANALYSIS_MODEL
+    assert call_kwargs["thinking"] == {"type": "adaptive"}
+    assert call_kwargs["output_config"]["effort"] == "low"
+
+
+def test_analyze_batch_airspace_organisation_uses_sonnet_without_thinking() -> None:
+    flight = _flight_context()
+    batch = NotamBatchPayload(
+        flight=flight,
+        notams=[_notam_row(1, "C0481/26 NOTAMN", topic="AIRSPACE_ORGANISATION")],
+        topic="AIRSPACE_ORGANISATION",
+    )
+    settings = Settings(
+        API_KEY="k",
+        SUPABASE_URL="https://example.supabase.co",
+        SUPABASE_SECRET_KEY="s",
+        ANTHROPIC_API_KEY="a",
+        UPSTASH_REDIS_REST_URL="https://example.upstash.io",
+        UPSTASH_REDIS_REST_TOKEN="token",
+        BETA_SIGNUP_CODE="test-signup-code",
+    )
+    mock_text_block = MagicMock()
+    mock_text_block.type = "text"
+    mock_text_block.text = (
+        '{"results": [{"notam_id": "C0481/26 NOTAMN", "category": 2}],'
+        '"rejected_notam_ids": []}'
+    )
+    mock_response = MagicMock()
+    mock_response.content = [mock_text_block]
+    mock_response.usage.input_tokens = 10
+    mock_response.usage.output_tokens = 5
+    mock_client = MagicMock()
+    mock_client.messages.create.return_value = mock_response
+
+    _analyze_batch(batch, client=mock_client, settings=settings)
+
+    call_kwargs = mock_client.messages.create.call_args.kwargs
+    assert call_kwargs["model"] == settings.NOTAM_ANALYSIS_MODEL
+    assert call_kwargs["thinking"] == {"type": "disabled"}
+    assert call_kwargs["output_config"]["effort"] == "low"
+
+
 def test_batch_result_outcome_tracks_missing_notam_ids() -> None:
     flight = _flight_context()
     batch = NotamBatchPayload(
@@ -392,7 +531,7 @@ def test_batch_result_outcome_tracks_missing_notam_ids() -> None:
             _notam_row(2, "C0478/26 NOTAMN"),
         ],
     )
-    results = [NotamResult(notam_id="C0481/26 NOTAMN", category=1, summary="A")]
+    results = [NotamResult(notam_id="C0481/26 NOTAMN", category=1)]
 
     valid_results, missing, rejected = _batch_result_outcome(batch, results, rejected_notam_ids=[])
 
@@ -418,7 +557,7 @@ def test_analyze_batch_returns_missing_instead_of_raising() -> None:
     )
     mock_text_block = MagicMock()
     mock_text_block.type = "text"
-    mock_text_block.text = '[{"notam_id": "WRONG/26", "category": 1, "summary": "X"}]'
+    mock_text_block.text = '[{"notam_id": "WRONG/26", "category": 1}]'
     mock_response = MagicMock()
     mock_response.content = [mock_text_block]
     mock_response.usage.input_tokens = 10
@@ -454,7 +593,7 @@ def test_analyze_notam_batches_collects_missing_from_failed_batches() -> None:
 
     def fake_analyze(current_batch, *, client, settings, system_prompt=None):
         return (
-            [NotamResult(notam_id="C0481/26 NOTAMN", category=1, summary="A")],
+            [CategoryResult(notam_id="C0481/26 NOTAMN", category=1)],
             BatchCallStats(
                 duration_ms=100,
                 input_tokens=100,
@@ -465,7 +604,7 @@ def test_analyze_notam_batches_collects_missing_from_failed_batches() -> None:
             set(),
         )
 
-    with patch("app.services.notam_analyzer._analyze_batch", side_effect=fake_analyze):
+    with patch("app.services.notam_analyzer._categorize_batch", side_effect=fake_analyze):
         result = analyze_notam_batches([batch], settings=settings)
 
     assert result.missing_notam_ids == ["C0478/26 NOTAMN"]
@@ -508,3 +647,102 @@ def test_merge_batch_results_combines_stats_and_keeps_final_missing() -> None:
     assert merged.missing_notam_ids == []
     assert merged.batches == 2
     assert merged.input_tokens == 300
+
+
+def test_summarize_batch_uses_haiku_and_summary_schema() -> None:
+    from app.services.notam_prompts.summary import SUMMARY
+
+    batch = chunk_summary_batches(
+        [_notam_row(1, "C0481/26 NOTAMN")],
+        batch_size=10,
+    )[0]
+    settings = Settings(
+        API_KEY="k",
+        SUPABASE_URL="https://example.supabase.co",
+        SUPABASE_SECRET_KEY="s",
+        ANTHROPIC_API_KEY="a",
+        UPSTASH_REDIS_REST_URL="https://example.upstash.io",
+        UPSTASH_REDIS_REST_TOKEN="token",
+        BETA_SIGNUP_CODE="test-signup-code",
+    )
+    mock_text_block = MagicMock()
+    mock_text_block.type = "text"
+    mock_text_block.text = (
+        '[{"notam_id": "C0481/26 NOTAMN", "summary": "Runway closed overnight."}]'
+    )
+    mock_response = MagicMock()
+    mock_response.content = [mock_text_block]
+    mock_response.usage.input_tokens = 10
+    mock_response.usage.output_tokens = 5
+    mock_client = MagicMock()
+    mock_client.messages.create.return_value = mock_response
+
+    results, stats, missing = _summarize_batch(
+        batch,
+        client=mock_client,
+        settings=settings,
+    )
+
+    assert results == [
+        SummaryResult(notam_id="C0481/26 NOTAMN", summary="Runway closed overnight.")
+    ]
+    assert missing == set()
+    call_kwargs = mock_client.messages.create.call_args.kwargs
+    assert call_kwargs["model"] == settings.NOTAM_SUMMARY_MODEL
+    assert call_kwargs["thinking"] == {"type": "disabled"}
+    assert call_kwargs["output_config"]["format"]["schema"] == SUMMARY_OUTPUT_JSON_SCHEMA
+    assert call_kwargs["system"][0]["text"] == SUMMARY
+
+
+def test_analyze_notam_job_skips_categorization_for_heuristic_rows() -> None:
+    flight = _flight_context()
+    rows = [
+        _notam_row(1, "C0481/26 NOTAMN", topic="OBSTACLE", topic_confidence=80),
+        _notam_row(2, "C0478/26 NOTAMN", topic="RUNWAY", topic_confidence=100),
+    ]
+    settings = Settings(
+        API_KEY="k",
+        SUPABASE_URL="https://example.supabase.co",
+        SUPABASE_SECRET_KEY="s",
+        ANTHROPIC_API_KEY="a",
+        UPSTASH_REDIS_REST_URL="https://example.upstash.io",
+        UPSTASH_REDIS_REST_TOKEN="token",
+        BETA_SIGNUP_CODE="test-signup-code",
+    )
+
+    with (
+        patch(
+            "app.services.notam_analyzer.categorize_notam_batches",
+            return_value=CategoryBatchResult(
+                results=[CategoryResult(notam_id="C0478/26 NOTAMN", category=2)],
+                batch_stats=[],
+                model=settings.NOTAM_ANALYSIS_MODEL,
+                token_limit_hit=False,
+            ),
+        ) as mock_categorize,
+        patch(
+            "app.services.notam_analyzer.summarize_notam_batches",
+            return_value=SummaryBatchResult(
+                results=[
+                    SummaryResult(notam_id="C0481/26 NOTAMN", summary="Obstacle lit."),
+                    SummaryResult(notam_id="C0478/26 NOTAMN", summary="Runway closed."),
+                ],
+                batch_stats=[],
+                model=settings.NOTAM_SUMMARY_MODEL,
+                token_limit_hit=False,
+            ),
+        ) as mock_summarize,
+    ):
+        job_result = analyze_notam_job(flight, rows, settings=settings)
+
+    mock_categorize.assert_called_once()
+    categorize_rows = [
+        notam.notam_id for batch in mock_categorize.call_args.args[0] for notam in batch.notams
+    ]
+    assert categorize_rows == ["C0478/26 NOTAMN"]
+    mock_summarize.assert_called_once()
+    assert job_result.heuristic_category_count == 1
+    assert job_result.results == [
+        NotamResult(notam_id="C0481/26 NOTAMN", category=3, summary="Obstacle lit."),
+        NotamResult(notam_id="C0478/26 NOTAMN", category=2, summary="Runway closed."),
+    ]

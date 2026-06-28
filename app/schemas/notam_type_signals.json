@@ -204,7 +204,8 @@
         "strong": [
             "ALL RADIO NAV FAC",
             "ALL RADIO NAV FACILITIES",
-            "ALL RADIO NAVIGATION FACILITIES"
+            "ALL RADIO NAVIGATION FACILITIES",
+            "GNSS"
         ],
         "moderate": [
             "NDB",

@@ -5,7 +5,7 @@
     "arrival_icao": "RJTT",
     "planned_dept_time": "2026-04-19T07:15:00+00:00",
     "planned_arr_time": "2026-04-19T15:09:00+00:00",
-    "route": "BIXAD2 BIXAD Q67 GUDSO Q24 KELPI B220 DOTOD/N0493F470 B220 PY H401 NZ B586 PIKOK/M089F470 B586 OMLET/N0496F470 B586 XAC XACN",
+    "route": "N0504F430 BIXAD2 BIXAD Q67 GUDSO Q24 KELPI B220 DOTOD/N0493F470 B220 PY H401 NZ B586 PIKOK/M089F470 B586 OMLET/N0496F470 B586 XAC XACN",
     "cruise_level": "FL470",
     "alt_icao": null,
     "source_app": "foreflight"
@@ -29,6 +29,17 @@
     "planned_arr_time": "2026-04-15T15:42:00+00:00",
     "route": "TESAT A576 KADOM H44 BORLI Q32 NODEV Q10 MALUP Q158 PH",
     "cruise_level": "FL430",
+    "alt_icao": "YBLN",
+    "source_app": "foreflight"
+  },
+  {
+    "pdf": "618f85e5-2377-9370-804b-9d46b916c212.pdf",
+    "departure_icao": "YSSY",
+    "arrival_icao": "YPPH",
+    "planned_dept_time": "2026-06-24T11:10:00+00:00",
+    "planned_arr_time": "2026-06-24T15:30:00+00:00",
+    "route": "N0473F400 DCT",
+    "cruise_level": "FL400",
     "alt_icao": "YBLN",
     "source_app": "foreflight"
   },

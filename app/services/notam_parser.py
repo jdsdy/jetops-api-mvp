@@ -69,9 +69,11 @@ def _join_digits(parts: list[str]) -> str | None:
 _FF_FIELD_ORDER = "QABCDEFG"
 _FF_SECTION_HEADER = "NOTAMs"
 
+_FF_STD_ID_SUFFIX = r"[A-Z0-9]{1,5}"
+_FF_STD_ID_BODY = rf"[A-Z]\d{{2,4}}/{_FF_STD_ID_SUFFIX}"
 _FF_STD_ID = re.compile(
-    r"^[A-Z]\d{2,4}/\d{1,3}"
-    r"( (NOTAM\w*)( [A-Z]\d{2,4}/\d{1,3})?| REPLACE [A-Z]\d{2,4}/\d{1,3})?$"
+    rf"^{_FF_STD_ID_BODY} "
+    rf"(NOTAM(?:N|R|C)(?: {_FF_STD_ID_BODY})?|REPLACE {_FF_STD_ID_BODY})$"
 )
 _FF_US_ID = re.compile(r"^[A-Z]{2,4} \d{1,2}/\d{2,4}\b")
 _FF_TAG = re.compile(r"(?:(?<=\s)|^)([QABCDEFG])\)")
