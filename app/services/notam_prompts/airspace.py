@@ -136,6 +136,9 @@ Restricted airspace notams could fall into any one of the 3 categories. Therefor
 STEP 1 - TEMPORAL CHECK
 Is this NOTAM active at any point within a 2 hour window either side of the flight schedule? Regardless of what the restricted area is in relation to, if this is not the case, the NOTAM must be classified as category 3. If the notam is active within a 2 hour window of the flight, continue to the next step. Note that restricted airspace notams that state they could become active with short notice must skip to the next step even if they are not active within a 2 hour window according to the notam itself. 
 
+STEP 2 - FLIGHT PATH RELEVANCY CHECK
+Is this notam likely to fall within the flight path of the aircraft? If the notam has a specified upper altitude limit that is lower than the cruise altitude, and the NOTAM is not related to the arrival or departure airfield, then the NOTAM should be classified as category 3. Even if the cruise altitude is higher than the upper altitude limit, airspace notams at the departure or arrival airfield should not be excluded by this step. If the notam is relevant to the flight path, continue to the next step.
+
 STEP 2 - CHECK FOR CATEGORY 1 NOTAMS
 Restricted airspace notams should only be classified as category 1 if the airspace restriction is for a duel operation airport. A dual operation airport is one that services both military and civilian traffic. Some examples include Darwin (YPDN), Tindal (YPTN), Williamtown (YSWM), Edinburgh (YPED), Amberley (YAMB), Richmond (YRID), Pearce (YPEA), and other joint-use facilities. These are the only restricted area notams that should be classified as category 1. If the notam is related to a dual operation airport, continue to the next step.
 
@@ -144,6 +147,6 @@ If you have gone through the previous 2 steps and neither match the NOTAM, class
 </handling_airspace_notams>
 
 <output_format>
-Your output must adhere to the provided JSON schema. Output must include the NOTAM ID, category (1, 2, or 3), and a short plain English summary for each NOTAM analysed. You must output the notam ID for each NOTAM exactly as it is provided to you. Do not omit, or make up notam IDs. Your summary should never reference an internal rule specified in this system prompt. The summary is user facing and should only be relevant to the notam itself, and informative to the flight crew.
+Your output must adhere to the provided JSON schema. Output must include the NOTAM ID and category (1, 2, or 3). You must output the notam ID for each NOTAM exactly as it is provided to you. Do not omit, or make up notam IDs.
 </output_format>
 """

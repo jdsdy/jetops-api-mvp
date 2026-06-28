@@ -5,10 +5,17 @@ import pytest
 from app.schemas.analysis_context import AircraftContext, AirfieldContext, FlightContext
 from app.schemas.flight import FlightData
 from app.schemas.notam import RawNotam
-from app.schemas.notam_analysis import BatchAnalysisResult, BatchCallStats
+from app.schemas.notam_analysis import (
+    AnalysisJobResult,
+    BatchAnalysisResult,
+    BatchCallStats,
+    CategoryBatchResult,
+    SummaryBatchResult,
+)
 from app.schemas.pipeline_stage import (
     build_context_object_metadata,
     build_flight_parse_metadata,
+    build_notam_analysis_metadata,
     build_notam_analysis_metadata_from_batch,
     build_notam_parse_metadata,
     build_notam_topic_classification_metadata,
@@ -185,3 +192,48 @@ def test_build_notam_analysis_metadata_includes_retried_notam_ids() -> None:
         "C0478/26 NOTAMN",
         "C0481/26 NOTAMN",
     ]
+
+
+def test_build_notam_analysis_metadata_uses_per_batch_categorize_rates() -> None:
+    job_result = AnalysisJobResult(
+        results=[],
+        category_result=CategoryBatchResult(
+            results=[],
+            batch_stats=[
+                BatchCallStats(
+                    duration_ms=100,
+                    input_tokens=1_000_000,
+                    output_tokens=0,
+                    batch_size=10,
+                    input_cost_per_m=1.0,
+                    output_cost_per_m=5.0,
+                ),
+                BatchCallStats(
+                    duration_ms=100,
+                    input_tokens=0,
+                    output_tokens=1_000_000,
+                    batch_size=10,
+                    input_cost_per_m=3.0,
+                    output_cost_per_m=15.0,
+                ),
+            ],
+            model="claude-sonnet-4-6",
+            token_limit_hit=False,
+        ),
+        summary_result=SummaryBatchResult(
+            results=[],
+            batch_stats=[],
+            model="claude-haiku-4-5",
+            token_limit_hit=False,
+        ),
+    )
+
+    metadata = build_notam_analysis_metadata(
+        job_result,
+        categorize_input_cost_per_m=3.0,
+        categorize_output_cost_per_m=15.0,
+        summarize_input_cost_per_m=1.0,
+        summarize_output_cost_per_m=5.0,
+    )
+
+    assert metadata.est_cost == pytest.approx(16.0)

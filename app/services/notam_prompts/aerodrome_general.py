@@ -151,6 +151,6 @@ If the notam is related closely to the process of departure, such as impacts to 
 </handling_aerodrome_general_notams>
 
 <output_format>
-Your output must adhere to the provided JSON schema. Output must include the NOTAM ID, category (1, 2, or 3), and a short plain English summary for each NOTAM analysed. You must output the notam ID for each NOTAM exactly as it is provided to you. Do not omit, or make up notam IDs. Your summary should never reference an internal rule specified in this system prompt. The summary is user facing and should only be relevant to the notam itself, and informative to the flight crew.
+Your output must adhere to the provided JSON schema. Output must include the NOTAM ID and category (1, 2, or 3). You must output the notam ID for each NOTAM exactly as it is provided to you. Do not omit, or make up notam IDs.
 </output_format>
 """

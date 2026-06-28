@@ -405,6 +405,123 @@ def test_analyze_batch_passes_custom_system_prompt() -> None:
     assert call_kwargs["system"][0]["text"] == custom_prompt
 
 
+def test_analyze_batch_obstacle_uses_haiku_without_thinking() -> None:
+    flight = _flight_context()
+    batch = NotamBatchPayload(
+        flight=flight,
+        notams=[_notam_row(1, "C0481/26 NOTAMN", topic="OBSTACLE")],
+        topic="OBSTACLE",
+    )
+    settings = Settings(
+        API_KEY="k",
+        SUPABASE_URL="https://example.supabase.co",
+        SUPABASE_SECRET_KEY="s",
+        ANTHROPIC_API_KEY="a",
+        UPSTASH_REDIS_REST_URL="https://example.upstash.io",
+        UPSTASH_REDIS_REST_TOKEN="token",
+        BETA_SIGNUP_CODE="test-signup-code",
+    )
+    mock_text_block = MagicMock()
+    mock_text_block.type = "text"
+    mock_text_block.text = (
+        '{"results": [{"notam_id": "C0481/26 NOTAMN", "category": 3}],'
+        '"rejected_notam_ids": []}'
+    )
+    mock_response = MagicMock()
+    mock_response.content = [mock_text_block]
+    mock_response.usage.input_tokens = 10
+    mock_response.usage.output_tokens = 5
+    mock_client = MagicMock()
+    mock_client.messages.create.return_value = mock_response
+
+    _analyze_batch(batch, client=mock_client, settings=settings)
+
+    call_kwargs = mock_client.messages.create.call_args.kwargs
+    assert call_kwargs["model"] == settings.NOTAM_CATEGORIZE_HAIKU_MODEL
+    assert call_kwargs["max_tokens"] == settings.NOTAM_CATEGORIZE_HAIKU_MAX_TOKENS
+    assert call_kwargs["thinking"] == {"type": "disabled"}
+    assert call_kwargs["output_config"] == {
+        "format": {
+            "type": "json_schema",
+            "schema": SPECIALIST_ANALYSIS_OUTPUT_JSON_SCHEMA,
+        },
+    }
+
+
+def test_analyze_batch_runway_uses_sonnet_with_adaptive_thinking() -> None:
+    flight = _flight_context()
+    batch = NotamBatchPayload(
+        flight=flight,
+        notams=[_notam_row(1, "C0481/26 NOTAMN", topic="RUNWAY")],
+        topic="RUNWAY",
+    )
+    settings = Settings(
+        API_KEY="k",
+        SUPABASE_URL="https://example.supabase.co",
+        SUPABASE_SECRET_KEY="s",
+        ANTHROPIC_API_KEY="a",
+        UPSTASH_REDIS_REST_URL="https://example.upstash.io",
+        UPSTASH_REDIS_REST_TOKEN="token",
+        BETA_SIGNUP_CODE="test-signup-code",
+    )
+    mock_text_block = MagicMock()
+    mock_text_block.type = "text"
+    mock_text_block.text = (
+        '{"results": [{"notam_id": "C0481/26 NOTAMN", "category": 1}],'
+        '"rejected_notam_ids": []}'
+    )
+    mock_response = MagicMock()
+    mock_response.content = [mock_text_block]
+    mock_response.usage.input_tokens = 10
+    mock_response.usage.output_tokens = 5
+    mock_client = MagicMock()
+    mock_client.messages.create.return_value = mock_response
+
+    _analyze_batch(batch, client=mock_client, settings=settings)
+
+    call_kwargs = mock_client.messages.create.call_args.kwargs
+    assert call_kwargs["model"] == settings.NOTAM_ANALYSIS_MODEL
+    assert call_kwargs["thinking"] == {"type": "adaptive"}
+    assert call_kwargs["output_config"]["effort"] == "low"
+
+
+def test_analyze_batch_airspace_organisation_uses_sonnet_without_thinking() -> None:
+    flight = _flight_context()
+    batch = NotamBatchPayload(
+        flight=flight,
+        notams=[_notam_row(1, "C0481/26 NOTAMN", topic="AIRSPACE_ORGANISATION")],
+        topic="AIRSPACE_ORGANISATION",
+    )
+    settings = Settings(
+        API_KEY="k",
+        SUPABASE_URL="https://example.supabase.co",
+        SUPABASE_SECRET_KEY="s",
+        ANTHROPIC_API_KEY="a",
+        UPSTASH_REDIS_REST_URL="https://example.upstash.io",
+        UPSTASH_REDIS_REST_TOKEN="token",
+        BETA_SIGNUP_CODE="test-signup-code",
+    )
+    mock_text_block = MagicMock()
+    mock_text_block.type = "text"
+    mock_text_block.text = (
+        '{"results": [{"notam_id": "C0481/26 NOTAMN", "category": 2}],'
+        '"rejected_notam_ids": []}'
+    )
+    mock_response = MagicMock()
+    mock_response.content = [mock_text_block]
+    mock_response.usage.input_tokens = 10
+    mock_response.usage.output_tokens = 5
+    mock_client = MagicMock()
+    mock_client.messages.create.return_value = mock_response
+
+    _analyze_batch(batch, client=mock_client, settings=settings)
+
+    call_kwargs = mock_client.messages.create.call_args.kwargs
+    assert call_kwargs["model"] == settings.NOTAM_ANALYSIS_MODEL
+    assert call_kwargs["thinking"] == {"type": "disabled"}
+    assert call_kwargs["output_config"]["effort"] == "low"
+
+
 def test_batch_result_outcome_tracks_missing_notam_ids() -> None:
     flight = _flight_context()
     batch = NotamBatchPayload(

@@ -27,6 +27,7 @@ from app.services.notam_heuristic_category import (
     heuristic_category,
     is_heuristic_category_candidate,
 )
+from app.services.notam_categorize_agent import get_categorize_agent_config
 from app.services.notam_prompts.summary import SUMMARY
 from app.services.notam_topic_prompts import get_system_prompt
 
@@ -293,11 +294,12 @@ def _categorize_batch(
         system_prompt = get_system_prompt(batch.topic)
 
     output_schema = _category_output_schema_for_topic(batch.topic)
+    agent_config = get_categorize_agent_config(batch.topic, settings)
     start = time.perf_counter()
     response = client.messages.create(
-        model=settings.NOTAM_ANALYSIS_MODEL,
-        max_tokens=settings.NOTAM_ANALYSIS_MAX_TOKENS,
-        thinking={"type": "adaptive"},
+        model=agent_config.model,
+        max_tokens=agent_config.max_tokens,
+        thinking=agent_config.thinking,
         system=[
             {
                 "type": "text",
@@ -306,13 +308,7 @@ def _categorize_batch(
             }
         ],
         messages=[{"role": "user", "content": _build_user_message(batch)}],
-        output_config={
-            "format": {
-                "type": "json_schema",
-                "schema": output_schema,
-            },
-            "effort": "low",
-        },
+        output_config=agent_config.category_output_config(output_schema),
     )
     duration_ms = int((time.perf_counter() - start) * 1000)
 
@@ -339,6 +335,10 @@ def _categorize_batch(
         input_tokens=response.usage.input_tokens,
         output_tokens=response.usage.output_tokens,
         batch_size=len(batch.notams),
+        model=agent_config.model,
+        max_tokens=agent_config.max_tokens,
+        input_cost_per_m=agent_config.input_cost_per_m,
+        output_cost_per_m=agent_config.output_cost_per_m,
     )
     return valid_results, stats, missing, rejected
 
@@ -570,7 +570,8 @@ def categorize_notam_batches(
             all_rejected.update(rejected)
 
     token_limit_hit = any(
-        stat.output_tokens >= settings.NOTAM_ANALYSIS_MAX_TOKENS
+        stat.output_tokens
+        >= (stat.max_tokens or settings.NOTAM_ANALYSIS_MAX_TOKENS)
         for stat in batch_stats
     )
 

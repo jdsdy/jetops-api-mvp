@@ -5,8 +5,7 @@
             "OBSTACLE ERECTED",
             "OBSTACLE TRIGGER",
             "OBSTACLE LIGHTS ON UNSERVICABLE",
-            "UNMANNED AIRCRAFT WILL TAKE PLACE",
-            ""
+            "UNMANNED AIRCRAFT WILL TAKE PLACE"
         ],
         "moderate": [
             "OBSTRUCTION",
@@ -24,9 +23,17 @@
             "CONTROL AREA",
             "ATS ROUTE",
             "AREA NAVIGATION ROUTE",
-            "OCEANIC CONTROL AREA"
+            "OCEANIC CONTROL AREA",
+            "AERONAUTICAL INFORMATION SERVICE",
+            "AIRCRAFT ENTRY REQUIREMENTS",
+            "REPORTING POINT CHANGED",
+            "FLIGHT INFORMATION REGION",
+            "SIGNIFICANT POINT"
         ],
-        "moderate": []
+        "moderate": [],
+        "exact": [
+            "EXERCISES"
+        ]
     },
     "PROCEDURE_GENERAL": {
         "strong": [
@@ -43,7 +50,8 @@
         "strong": [
             "AERODROME LIMITED TO",
             "AERODROME CONCENTRATION OF BIRDS",
-            "METEOROLOGICAL SERVICE NOT AVAILABLE"
+            "METEOROLOGICAL SERVICE NOT AVAILABLE",
+            "HELIPORT"
         ],
         "moderate": [
             "BIRDS",
@@ -116,7 +124,8 @@
             "NON-DIRECTIONAL RADIO BEACON",
             "DISTANCE MEASURING EQUIPMENT",
             "VOR/DME SUBJECT TO INTERRUPTION",
-            "TACAN"
+            "TACAN",
+            "GNSS AREA-WIDE OPERATIONS"
         ],
         "moderate": [
             "NAVAID",

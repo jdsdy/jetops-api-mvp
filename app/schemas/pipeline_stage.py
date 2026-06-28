@@ -6,7 +6,7 @@ from pydantic import BaseModel
 from app.schemas.analysis_context import AircraftContext, AirfieldContext, FlightContext
 from app.schemas.flight import FlightData, PlanSource
 from app.schemas.notam import RawNotam
-from app.schemas.notam_analysis import AnalysisJobResult, BatchAnalysisResult
+from app.schemas.notam_analysis import AnalysisJobResult, BatchAnalysisResult, BatchCallStats
 
 StageName = Literal[
     "pdf_extraction",
@@ -91,6 +91,29 @@ def build_context_object_metadata(flight: FlightContext) -> BuildContextObjectMe
     )
 
 
+def _estimate_batch_stats_cost(
+    batch_stats: list[BatchCallStats],
+    *,
+    default_input_cost_per_m: float,
+    default_output_cost_per_m: float,
+) -> float:
+    total = 0.0
+    for stat in batch_stats:
+        input_rate = (
+            stat.input_cost_per_m
+            if stat.input_cost_per_m is not None
+            else default_input_cost_per_m
+        )
+        output_rate = (
+            stat.output_cost_per_m
+            if stat.output_cost_per_m is not None
+            else default_output_cost_per_m
+        )
+        total += stat.input_tokens * input_rate / 1_000_000
+        total += stat.output_tokens * output_rate / 1_000_000
+    return total
+
+
 def build_notam_analysis_metadata(
     job_result: AnalysisJobResult,
     *,
@@ -108,8 +131,11 @@ def build_notam_analysis_metadata(
     summarize_input_tokens = summary_result.input_tokens
     summarize_output_tokens = summary_result.output_tokens
     est_cost = (
-        categorize_input_tokens * categorize_input_cost_per_m / 1_000_000
-        + categorize_output_tokens * categorize_output_cost_per_m / 1_000_000
+        _estimate_batch_stats_cost(
+            category_result.batch_stats,
+            default_input_cost_per_m=categorize_input_cost_per_m,
+            default_output_cost_per_m=categorize_output_cost_per_m,
+        )
         + summarize_input_tokens * summarize_input_cost_per_m / 1_000_000
         + summarize_output_tokens * summarize_output_cost_per_m / 1_000_000
     )

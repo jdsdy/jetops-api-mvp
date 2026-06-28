@@ -72,6 +72,43 @@ def test_naips_datetime_expands_token() -> None:
 # --- ForeFlight NOTAMs ---
 
 
+def test_standard_notam_accepts_alphanumeric_sequence_suffix() -> None:
+    body = (
+        "RUNWAY CLOSED\n"
+        "E1428/25A02 NOTAMN\n"
+        "Q) YBBB/QMXLC/IV/BO/A/000/999/2723S15307E005\n"
+        "A) YBBN\n"
+        "B) 2604191200 C) 2604191900\n"
+        "E) RWY 01 CLSD\n"
+    )
+    notam = _parse_foreflight(body)["E1428/25A02 NOTAMN"]
+    assert notam.title == "RUNWAY CLOSED"
+    assert notam.e == "RWY 01 CLSD"
+
+
+def test_shorthand_notam_reference_in_e_field_is_not_new_notam() -> None:
+    body = (
+        "RUNWAY CLOSED\n"
+        "C0481/26 NOTAMN\n"
+        "Q) YBBB/QMXLC/IV/BO/A/000/999/2723S15307E005\n"
+        "A) YBBN\n"
+        "B) 2604191200 C) 2604191900\n"
+        "E) SEE ALSO E1428/25 FOR DETAILS\n"
+        "E1428/25\n"
+        "OTHER NOTAM\n"
+        "C0478/26 NOTAMN\n"
+        "Q) YBBB/QFAHX/IV/NBO/A/000/999/2723S15307E005\n"
+        "A) YBBN\n"
+        "B) 2604170011 C) 2604220748\n"
+        "E) INCREASED BIRD HAZARD\n"
+    )
+    notams = _parse_foreflight(body)
+    assert list(notams) == ["C0481/26 NOTAMN", "C0478/26 NOTAMN"]
+    assert notams["C0481/26 NOTAMN"].e == (
+        "SEE ALSO E1428/25 FOR DETAILS{\\n} E1428/25"
+    )
+
+
 def test_standard_notam_fields_and_title() -> None:
     body = (
         "TAXIWAY CLOSED (NEW TODAY)\n"

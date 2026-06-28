@@ -77,6 +77,10 @@ class BatchCallStats(BaseModel):
     input_tokens: int
     output_tokens: int
     batch_size: int
+    model: str | None = None
+    max_tokens: int | None = None
+    input_cost_per_m: float | None = None
+    output_cost_per_m: float | None = None
 
 
 class CategoryBatchResult(BaseModel):
