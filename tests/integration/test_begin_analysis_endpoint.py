@@ -6,12 +6,12 @@ from fastapi.testclient import TestClient
 
 from app.api.dependencies import get_authenticated_user, verify_api_key
 from app.api.rate_limit import rate_limit_begin_analysis
-from app.api.v1.endpoints.jobs import get_analysis_service
+from app.api.v1.app.endpoints.jobs import get_analysis_service
 from app.core.config import Settings, get_settings
 from app.main import app
 from app.schemas.analysis_context import BeginAnalysisResponse
 from app.schemas.job import BeginAnalysisRequest
-from app.services.analysis_service import AnalysisService
+from app.services.analysis.analysis_service import AnalysisService
 from tests.conftest import FLIGHT_ID, ORG_ID, PLAN_ID, auth_headers
 
 
@@ -54,9 +54,9 @@ def test_begin_analysis_returns_response_begun_and_schedules_background_task(
     job_id = uuid4()
     mock_analysis_service.begin_analysis.return_value = BeginAnalysisResponse()
 
-    with patch("app.api.v1.endpoints.jobs.run_analysis_task") as mock_task:
+    with patch("app.api.v1.app.endpoints.jobs.run_analysis_task") as mock_task:
         response = analysis_client.post(
-            "/v1/jobs/analysis",
+            "/v1/app/jobs/analysis",
             json=valid_begin_analysis_payload(job_id),
             headers=auth_headers(),
         )
@@ -79,7 +79,7 @@ def test_begin_analysis_wrong_status_returns_400(
     )
 
     response = analysis_client.post(
-        "/v1/jobs/analysis",
+        "/v1/app/jobs/analysis",
         json=valid_begin_analysis_payload(),
         headers=auth_headers(),
     )
@@ -95,7 +95,7 @@ def test_begin_analysis_missing_job_returns_404(
     mock_analysis_service.begin_analysis.side_effect = LookupError("Analysis job not found")
 
     response = analysis_client.post(
-        "/v1/jobs/analysis",
+        "/v1/app/jobs/analysis",
         json=valid_begin_analysis_payload(),
         headers=auth_headers(),
     )
@@ -108,7 +108,7 @@ def test_begin_analysis_invalid_body_returns_422(analysis_client: TestClient) ->
     del payload["job_id"]
 
     response = analysis_client.post(
-        "/v1/jobs/analysis",
+        "/v1/app/jobs/analysis",
         json=payload,
         headers=auth_headers(),
     )

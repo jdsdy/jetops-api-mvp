@@ -4,8 +4,8 @@ from datetime import datetime
 import pytest
 
 from app.schemas.flight import FlightData
-from app.services.flight_parser import parse_flight_data
-from app.services.pdf_extractor import extract_pdf_text
+from app.services.extraction.flight_parser import parse_flight_data
+from app.services.extraction.pdf_extractor import extract_pdf_text
 from tests.paths import EXAMPLE_PLANS_DIR, FLIGHT_DATA_FIXTURES
 
 

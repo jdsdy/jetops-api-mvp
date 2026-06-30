@@ -4,7 +4,7 @@ Creates a new NOTAM analysis job for a flight plan PDF that already exists in Su
 
 ## Request
 
-`POST /v1/jobs`
+`POST /v1/app/jobs`
 
 ### Headers
 
@@ -125,7 +125,7 @@ Load order: `.env`, then `.env.local` (local overrides).
 ## Example
 
 ```bash
-curl -X POST "https://api.example.com/v1/jobs" \
+curl -X POST "https://api.example.com/v1/app/jobs" \
   -H "Authorization: Bearer eyJhbG..." \
   -H "x-api-key: your-api-key" \
   -H "Content-Type: application/json" \

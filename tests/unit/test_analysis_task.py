@@ -13,7 +13,7 @@ from app.schemas.notam_analysis import (
     SummaryResult,
     BatchCallStats,
 )
-from app.services.analysis_task import run_analysis_task
+from app.services.analysis.analysis_task import run_analysis_task
 from tests.conftest import PLAN_ID
 
 
@@ -112,33 +112,33 @@ def test_run_analysis_task_success_sets_finished_and_persists() -> None:
     mock_settings.NOTAM_SUMMARY_OUTPUT_COST_PER_M = 5.0
 
     with (
-        patch("app.services.analysis_task.get_supabase_client"),
-        patch("app.services.analysis_task.JobRepository", return_value=mock_job_repo),
+        patch("app.services.analysis.analysis_task.get_supabase_client"),
+        patch("app.services.analysis.analysis_task.JobRepository", return_value=mock_job_repo),
         patch(
-            "app.services.analysis_task.AnalysisContextRepository",
+            "app.services.analysis.analysis_task.AnalysisContextRepository",
             return_value=mock_context_repo,
         ),
         patch(
-            "app.services.analysis_task.AnalysedNotamRepository",
+            "app.services.analysis.analysis_task.AnalysedNotamRepository",
             return_value=mock_analysed_repo,
         ),
         patch(
-            "app.services.pipeline_stage.PipelineStageLogRepository",
+            "app.services.pipeline.pipeline_stage.PipelineStageLogRepository",
             return_value=mock_stage_repo,
         ),
         patch(
-            "app.services.analysis_task.build_flight_context",
+            "app.services.analysis.analysis_task.build_flight_context",
             return_value=_flight_context(),
         ),
         patch(
-            "app.services.analysis_task.build_notam_rows",
+            "app.services.analysis.analysis_task.build_notam_rows",
             return_value=notam_rows,
         ),
         patch(
-            "app.services.analysis_task.analyze_notam_job",
+            "app.services.analysis.analysis_task.analyze_notam_job",
             return_value=job_result,
         ),
-        patch("app.services.analysis_task.get_settings", return_value=mock_settings),
+        patch("app.services.analysis.analysis_task.get_settings", return_value=mock_settings),
     ):
         run_analysis_task(job_id, PLAN_ID)
 
@@ -185,41 +185,41 @@ def test_run_analysis_task_retries_missing_category_and_finishes() -> None:
     mock_settings.NOTAM_SUMMARY_OUTPUT_COST_PER_M = 5.0
 
     with (
-        patch("app.services.analysis_task.get_supabase_client"),
-        patch("app.services.analysis_task.JobRepository", return_value=mock_job_repo),
+        patch("app.services.analysis.analysis_task.get_supabase_client"),
+        patch("app.services.analysis.analysis_task.JobRepository", return_value=mock_job_repo),
         patch(
-            "app.services.analysis_task.AnalysisContextRepository",
+            "app.services.analysis.analysis_task.AnalysisContextRepository",
             return_value=MagicMock(),
         ),
         patch(
-            "app.services.analysis_task.AnalysedNotamRepository",
+            "app.services.analysis.analysis_task.AnalysedNotamRepository",
             return_value=mock_analysed_repo,
         ),
         patch(
-            "app.services.pipeline_stage.PipelineStageLogRepository",
+            "app.services.pipeline.pipeline_stage.PipelineStageLogRepository",
             return_value=MagicMock(),
         ),
         patch(
-            "app.services.analysis_task.build_flight_context",
+            "app.services.analysis.analysis_task.build_flight_context",
             return_value=_flight_context(),
         ),
         patch(
-            "app.services.analysis_task.build_notam_rows",
+            "app.services.analysis.analysis_task.build_notam_rows",
             return_value=notam_rows,
         ),
         patch(
-            "app.services.analysis_task.analyze_notam_job",
+            "app.services.analysis.analysis_task.analyze_notam_job",
             return_value=initial_result,
         ),
         patch(
-            "app.services.analysis_task.build_topic_batches",
+            "app.services.analysis.analysis_task.build_topic_batches",
             return_value=[MagicMock()],
         ) as mock_build_batches,
         patch(
-            "app.services.analysis_task.categorize_notam_batches",
+            "app.services.analysis.analysis_task.categorize_notam_batches",
             return_value=retry_category_result,
         ) as mock_categorize,
-        patch("app.services.analysis_task.get_settings", return_value=mock_settings),
+        patch("app.services.analysis.analysis_task.get_settings", return_value=mock_settings),
     ):
         run_analysis_task(job_id, PLAN_ID)
 
@@ -277,41 +277,41 @@ def test_run_analysis_task_retries_missing_summary_only() -> None:
     mock_settings.NOTAM_SUMMARY_OUTPUT_COST_PER_M = 5.0
 
     with (
-        patch("app.services.analysis_task.get_supabase_client"),
-        patch("app.services.analysis_task.JobRepository", return_value=mock_job_repo),
+        patch("app.services.analysis.analysis_task.get_supabase_client"),
+        patch("app.services.analysis.analysis_task.JobRepository", return_value=mock_job_repo),
         patch(
-            "app.services.analysis_task.AnalysisContextRepository",
+            "app.services.analysis.analysis_task.AnalysisContextRepository",
             return_value=MagicMock(),
         ),
         patch(
-            "app.services.analysis_task.AnalysedNotamRepository",
+            "app.services.analysis.analysis_task.AnalysedNotamRepository",
             return_value=mock_analysed_repo,
         ),
         patch(
-            "app.services.pipeline_stage.PipelineStageLogRepository",
+            "app.services.pipeline.pipeline_stage.PipelineStageLogRepository",
             return_value=MagicMock(),
         ),
         patch(
-            "app.services.analysis_task.build_flight_context",
+            "app.services.analysis.analysis_task.build_flight_context",
             return_value=_flight_context(),
         ),
         patch(
-            "app.services.analysis_task.build_notam_rows",
+            "app.services.analysis.analysis_task.build_notam_rows",
             return_value=notam_rows,
         ),
         patch(
-            "app.services.analysis_task.analyze_notam_job",
+            "app.services.analysis.analysis_task.analyze_notam_job",
             return_value=initial_result,
         ),
         patch(
-            "app.services.analysis_task.chunk_summary_batches",
+            "app.services.analysis.analysis_task.chunk_summary_batches",
             return_value=[MagicMock()],
         ),
         patch(
-            "app.services.analysis_task.summarize_notam_batches",
+            "app.services.analysis.analysis_task.summarize_notam_batches",
             return_value=retry_summary_result,
         ) as mock_summarize,
-        patch("app.services.analysis_task.get_settings", return_value=mock_settings),
+        patch("app.services.analysis.analysis_task.get_settings", return_value=mock_settings),
     ):
         run_analysis_task(job_id, PLAN_ID)
 
@@ -356,42 +356,42 @@ def test_run_analysis_task_sets_partial_finish_when_retry_still_missing() -> Non
     mock_analysed_repo = MagicMock()
 
     with (
-        patch("app.services.analysis_task.get_supabase_client"),
-        patch("app.services.analysis_task.JobRepository", return_value=mock_job_repo),
+        patch("app.services.analysis.analysis_task.get_supabase_client"),
+        patch("app.services.analysis.analysis_task.JobRepository", return_value=mock_job_repo),
         patch(
-            "app.services.analysis_task.AnalysisContextRepository",
+            "app.services.analysis.analysis_task.AnalysisContextRepository",
             return_value=MagicMock(),
         ),
         patch(
-            "app.services.analysis_task.AnalysedNotamRepository",
+            "app.services.analysis.analysis_task.AnalysedNotamRepository",
             return_value=mock_analysed_repo,
         ),
         patch(
-            "app.services.pipeline_stage.PipelineStageLogRepository",
+            "app.services.pipeline.pipeline_stage.PipelineStageLogRepository",
             return_value=MagicMock(),
         ),
         patch(
-            "app.services.analysis_task.build_flight_context",
+            "app.services.analysis.analysis_task.build_flight_context",
             return_value=_flight_context(),
         ),
         patch(
-            "app.services.analysis_task.build_notam_rows",
+            "app.services.analysis.analysis_task.build_notam_rows",
             return_value=notam_rows,
         ),
         patch(
-            "app.services.analysis_task.analyze_notam_job",
+            "app.services.analysis.analysis_task.analyze_notam_job",
             return_value=initial_result,
         ),
         patch(
-            "app.services.analysis_task.build_topic_batches",
+            "app.services.analysis.analysis_task.build_topic_batches",
             return_value=[MagicMock()],
         ),
         patch(
-            "app.services.analysis_task.categorize_notam_batches",
+            "app.services.analysis.analysis_task.categorize_notam_batches",
             return_value=retry_result,
         ),
         patch(
-            "app.services.analysis_task.get_settings",
+            "app.services.analysis.analysis_task.get_settings",
             return_value=MagicMock(
                 NOTAM_ANALYSIS_RETRY_BATCH_SIZE=5,
                 NOTAM_ANALYSIS_INPUT_COST_PER_M=3.0,
@@ -448,41 +448,41 @@ def test_run_analysis_task_retries_rejected_notams_with_general_agent() -> None:
     mock_settings.NOTAM_SUMMARY_OUTPUT_COST_PER_M = 5.0
 
     with (
-        patch("app.services.analysis_task.get_supabase_client"),
-        patch("app.services.analysis_task.JobRepository", return_value=mock_job_repo),
+        patch("app.services.analysis.analysis_task.get_supabase_client"),
+        patch("app.services.analysis.analysis_task.JobRepository", return_value=mock_job_repo),
         patch(
-            "app.services.analysis_task.AnalysisContextRepository",
+            "app.services.analysis.analysis_task.AnalysisContextRepository",
             return_value=MagicMock(),
         ),
         patch(
-            "app.services.analysis_task.AnalysedNotamRepository",
+            "app.services.analysis.analysis_task.AnalysedNotamRepository",
             return_value=mock_analysed_repo,
         ),
         patch(
-            "app.services.pipeline_stage.PipelineStageLogRepository",
+            "app.services.pipeline.pipeline_stage.PipelineStageLogRepository",
             return_value=MagicMock(),
         ),
         patch(
-            "app.services.analysis_task.build_flight_context",
+            "app.services.analysis.analysis_task.build_flight_context",
             return_value=_flight_context(),
         ),
         patch(
-            "app.services.analysis_task.build_notam_rows",
+            "app.services.analysis.analysis_task.build_notam_rows",
             return_value=notam_rows,
         ),
         patch(
-            "app.services.analysis_task.analyze_notam_job",
+            "app.services.analysis.analysis_task.analyze_notam_job",
             return_value=initial_result,
         ),
         patch(
-            "app.services.analysis_task.chunk_notam_batches",
+            "app.services.analysis.analysis_task.chunk_notam_batches",
             return_value=[MagicMock()],
         ) as mock_general_batches,
         patch(
-            "app.services.analysis_task.categorize_notam_batches",
+            "app.services.analysis.analysis_task.categorize_notam_batches",
             return_value=rejected_retry_result,
         ),
-        patch("app.services.analysis_task.get_settings", return_value=mock_settings),
+        patch("app.services.analysis.analysis_task.get_settings", return_value=mock_settings),
     ):
         run_analysis_task(job_id, PLAN_ID)
 
@@ -497,25 +497,25 @@ def test_run_analysis_task_marks_failed_on_error() -> None:
     mock_job_repo = MagicMock()
 
     with (
-        patch("app.services.analysis_task.get_supabase_client"),
-        patch("app.services.analysis_task.JobRepository", return_value=mock_job_repo),
+        patch("app.services.analysis.analysis_task.get_supabase_client"),
+        patch("app.services.analysis.analysis_task.JobRepository", return_value=mock_job_repo),
         patch(
-            "app.services.analysis_task.AnalysisContextRepository",
+            "app.services.analysis.analysis_task.AnalysisContextRepository",
             return_value=MagicMock(),
         ),
         patch(
-            "app.services.analysis_task.AnalysedNotamRepository",
+            "app.services.analysis.analysis_task.AnalysedNotamRepository",
             return_value=MagicMock(),
         ),
         patch(
-            "app.services.pipeline_stage.PipelineStageLogRepository",
+            "app.services.pipeline.pipeline_stage.PipelineStageLogRepository",
             return_value=MagicMock(),
         ),
         patch(
-            "app.services.analysis_task.build_flight_context",
+            "app.services.analysis.analysis_task.build_flight_context",
             side_effect=RuntimeError("context failed"),
         ),
-        patch("app.services.analysis_task.get_settings"),
+        patch("app.services.analysis.analysis_task.get_settings"),
     ):
         run_analysis_task(job_id, PLAN_ID)
 

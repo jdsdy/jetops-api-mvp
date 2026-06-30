@@ -6,7 +6,7 @@ from supabase_auth.types import User
 from app.core.errors import JobStepError, extract_error_message
 from app.repositories.job_repository import JobRepository
 from app.schemas.job import CreateJobRequest
-from app.services.storage_path import validate_storage_path
+from app.services.jobs.storage_path import validate_storage_path
 
 PROCESSING_EXTRACTION = "processing_extraction"
 

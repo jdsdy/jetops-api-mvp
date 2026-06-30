@@ -1,6 +1,6 @@
 from app.schemas.notam_topic import MISC_TOPIC, SPECIALIST_TOPICS
-from app.services.notam_prompts import GENERIC
-from app.services.notam_topic_prompts import get_system_prompt
+from app.services.analysis.notam_prompts import GENERIC
+from app.services.analysis.notam_topic_prompts import get_system_prompt
 
 
 def test_get_system_prompt_returns_non_empty_for_all_specialist_topics() -> None:

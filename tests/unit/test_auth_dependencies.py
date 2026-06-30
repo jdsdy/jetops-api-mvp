@@ -21,13 +21,13 @@ def auth_client(test_settings: Settings) -> TestClient:
 
 def test_missing_api_key_returns_401(auth_client: TestClient) -> None:
     headers = {"Authorization": "Bearer test-jwt"}
-    response = auth_client.post("/v1/jobs", json=valid_job_payload(), headers=headers)
+    response = auth_client.post("/v1/app/jobs", json=valid_job_payload(), headers=headers)
     assert response.status_code == 401
 
 
 def test_wrong_api_key_returns_401(auth_client: TestClient) -> None:
     response = auth_client.post(
-        "/v1/jobs",
+        "/v1/app/jobs",
         json=valid_job_payload(),
         headers=auth_headers(api_key="wrong-key"),
     )
@@ -36,7 +36,7 @@ def test_wrong_api_key_returns_401(auth_client: TestClient) -> None:
 
 def test_missing_bearer_token_returns_401(auth_client: TestClient) -> None:
     response = auth_client.post(
-        "/v1/jobs",
+        "/v1/app/jobs",
         json=valid_job_payload(),
         headers={"x-api-key": TEST_API_KEY},
     )
@@ -49,7 +49,7 @@ def test_invalid_bearer_token_returns_401(auth_client: TestClient) -> None:
 
     with patch("app.api.dependencies.get_supabase_client", return_value=mock_client):
         response = auth_client.post(
-            "/v1/jobs",
+            "/v1/app/jobs",
             json=valid_job_payload(),
             headers=auth_headers(),
         )

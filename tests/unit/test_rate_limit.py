@@ -9,6 +9,7 @@ from app.api.rate_limit import (
     RATE_LIMIT_EXCEEDED_DETAIL,
     _enforce_ratelimit,
     rate_limit_create_job,
+    rate_limit_integration_poll,
 )
 
 
@@ -58,3 +59,28 @@ def test_rate_limit_create_job_uses_authenticated_user_id() -> None:
     rate_limit_create_job(user=user, ratelimit=ratelimit)
 
     ratelimit.limit.assert_called_once_with("user-abc")
+
+
+def test_rate_limit_integration_poll_uses_api_key_hash() -> None:
+    from starlette.requests import Request
+
+    request = Request(
+        {
+            "type": "http",
+            "headers": [],
+            "method": "GET",
+            "path": "/v1/analysis/job-id",
+        }
+    )
+    request.state.api_key_hash = "hashed-key"
+    ratelimit = MagicMock()
+    ratelimit.limit.return_value = Response(
+        allowed=True,
+        limit=10,
+        remaining=9,
+        reset=time.time() + 1,
+    )
+
+    rate_limit_integration_poll(request=request, ratelimit=ratelimit)
+
+    ratelimit.limit.assert_called_once_with("hashed-key")

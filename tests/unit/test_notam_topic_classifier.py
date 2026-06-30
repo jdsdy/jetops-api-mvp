@@ -2,7 +2,7 @@ import pytest
 
 from app.schemas.notam import RawNotam
 from app.schemas.notam_topic import MISC_TOPIC
-from app.services.notam_topic_classifier import (
+from app.services.extraction.notam_topic_classifier import (
     Q_CODE_MATCH_CONFIDENCE,
     classify_by_e_heuristics,
     classify_by_q_code,
@@ -244,7 +244,7 @@ def test_classify_by_title_heuristics_exact_overrides_other_topic_signals(
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:
     monkeypatch.setattr(
-        "app.services.notam_topic_classifier._load_title_signals",
+        "app.services.extraction.notam_topic_classifier._load_title_signals",
         lambda: {
             "AERODROME_GENERAL": {"strong": [], "moderate": [], "exact": ["BIRDS"]},
             "OBSTACLE": {"strong": ["BIRDS"], "moderate": []},
@@ -261,7 +261,7 @@ def test_classify_by_title_heuristics_multiple_exact_matches_returns_misc(
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:
     monkeypatch.setattr(
-        "app.services.notam_topic_classifier._load_title_signals",
+        "app.services.extraction.notam_topic_classifier._load_title_signals",
         lambda: {
             "AERODROME_GENERAL": {"strong": [], "moderate": [], "exact": ["FOO"]},
             "RUNWAY": {"strong": [], "moderate": [], "exact": ["FOO"]},
@@ -285,7 +285,7 @@ def test_classify_by_title_heuristics_two_moderate_signals_qualify(
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:
     monkeypatch.setattr(
-        "app.services.notam_topic_classifier._load_title_signals",
+        "app.services.extraction.notam_topic_classifier._load_title_signals",
         lambda: {
             "RUNWAY": {
                 "strong": [],
@@ -304,7 +304,7 @@ def test_classify_by_title_heuristics_one_moderate_returns_misc_with_score(
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:
     monkeypatch.setattr(
-        "app.services.notam_topic_classifier._load_title_signals",
+        "app.services.extraction.notam_topic_classifier._load_title_signals",
         lambda: {
             "RUNWAY": {
                 "strong": [],
@@ -323,7 +323,7 @@ def test_classify_by_title_heuristics_multiple_qualifying_topics_returns_misc(
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:
     monkeypatch.setattr(
-        "app.services.notam_topic_classifier._load_title_signals",
+        "app.services.extraction.notam_topic_classifier._load_title_signals",
         lambda: {
             "RUNWAY": {"strong": ["RWY CLSD"], "moderate": []},
             "OBSTACLE": {"strong": ["OBSTACLE"], "moderate": []},

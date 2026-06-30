@@ -2,7 +2,7 @@ from unittest.mock import MagicMock, patch
 from uuid import uuid4
 
 from app.schemas.pipeline_stage import FlightDataParseMetadata, PdfExtractionMetadata
-from app.services.pipeline_stage import PipelineStageLogger
+from app.services.pipeline.pipeline_stage import PipelineStageLogger
 
 
 def test_log_inserts_serialised_metadata() -> None:
@@ -10,7 +10,7 @@ def test_log_inserts_serialised_metadata() -> None:
     mock_repo = MagicMock()
 
     with patch(
-        "app.services.pipeline_stage.PipelineStageLogRepository",
+        "app.services.pipeline.pipeline_stage.PipelineStageLogRepository",
         return_value=mock_repo,
     ):
         logger = PipelineStageLogger(MagicMock(), job_id)
@@ -41,7 +41,7 @@ def test_track_writes_log_on_exit_when_metadata_set() -> None:
     mock_repo = MagicMock()
 
     with patch(
-        "app.services.pipeline_stage.PipelineStageLogRepository",
+        "app.services.pipeline.pipeline_stage.PipelineStageLogRepository",
         return_value=mock_repo,
     ):
         logger = PipelineStageLogger(MagicMock(), job_id)
@@ -64,7 +64,7 @@ def test_track_skips_log_when_metadata_not_set() -> None:
     mock_repo = MagicMock()
 
     with patch(
-        "app.services.pipeline_stage.PipelineStageLogRepository",
+        "app.services.pipeline.pipeline_stage.PipelineStageLogRepository",
         return_value=mock_repo,
     ):
         logger = PipelineStageLogger(MagicMock(), uuid4())
@@ -79,7 +79,7 @@ def test_log_swallows_repository_errors() -> None:
     mock_repo.insert_log.side_effect = RuntimeError("db down")
 
     with patch(
-        "app.services.pipeline_stage.PipelineStageLogRepository",
+        "app.services.pipeline.pipeline_stage.PipelineStageLogRepository",
         return_value=mock_repo,
     ):
         logger = PipelineStageLogger(MagicMock(), uuid4())

@@ -17,10 +17,10 @@ from app.schemas.job import (
     CreateJobRequest,
     CreateJobResponse,
 )
-from app.services.analysis_service import AnalysisService
-from app.services.analysis_task import run_analysis_task
-from app.services.extraction_task import run_extraction
-from app.services.job_service import JobService
+from app.services.analysis.analysis_service import AnalysisService
+from app.services.analysis.analysis_task import run_analysis_task
+from app.services.extraction.extraction_task import run_extraction
+from app.services.jobs.job_service import JobService
 
 router = APIRouter(
     prefix="/jobs",

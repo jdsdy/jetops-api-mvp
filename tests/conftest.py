@@ -7,12 +7,13 @@ from supabase_auth.types import User
 
 from app.api.dependencies import get_authenticated_user, verify_api_key
 from app.api.rate_limit import rate_limit_begin_analysis, rate_limit_create_job
-from app.api.v1.endpoints.jobs import get_job_service
+from app.api.v1.app.endpoints.jobs import get_job_service
 from app.core.config import Settings, get_settings
 from app.main import app
-from app.services.job_service import JobService
+from app.services.jobs.job_service import JobService
 
 TEST_API_KEY = "test-api-key"
+TEST_INTEGRATION_RAW_KEY = "jops_dev_sk_test_integration_key"
 TEST_USER_ID = "11111111-1111-1111-1111-111111111111"
 ORG_ID = UUID("aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa")
 FLIGHT_ID = UUID("bbbbbbbb-bbbb-bbbb-bbbb-bbbbbbbbbbbb")
@@ -63,7 +64,7 @@ def client(
     app.dependency_overrides[rate_limit_begin_analysis] = lambda: None
 
     with (
-        patch("app.api.v1.endpoints.jobs.run_extraction"),
+        patch("app.api.v1.app.endpoints.jobs.run_extraction"),
         TestClient(app) as test_client,
     ):
         yield test_client
@@ -85,3 +86,7 @@ def auth_headers(api_key: str | None = TEST_API_KEY) -> dict[str, str]:
     if api_key is not None:
         headers["x-api-key"] = api_key
     return headers
+
+
+def integration_auth_headers(raw_key: str = TEST_INTEGRATION_RAW_KEY) -> dict[str, str]:
+    return {"Authorization": f"Bearer {raw_key}"}

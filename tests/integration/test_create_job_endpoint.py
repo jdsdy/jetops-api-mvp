@@ -12,7 +12,7 @@ def test_create_job_happy_path_returns_201_with_id(client, mock_job_service) -> 
     mock_job_service.create_job.return_value = job_id
 
     response = client.post(
-        "/v1/jobs",
+        "/v1/app/jobs",
         json=valid_job_payload(),
         headers=auth_headers(),
     )
@@ -30,7 +30,7 @@ def test_pdf_missing_returns_404_with_id(client, mock_job_service) -> None:
     )
 
     response = client.post(
-        "/v1/jobs",
+        "/v1/app/jobs",
         json=valid_job_payload(),
         headers=auth_headers(),
     )
@@ -43,7 +43,7 @@ def test_invalid_body_returns_422(client) -> None:
     payload = valid_job_payload()
     del payload["flight_plan_id"]
 
-    response = client.post("/v1/jobs", json=payload, headers=auth_headers())
+    response = client.post("/v1/app/jobs", json=payload, headers=auth_headers())
 
     assert response.status_code == 422
 
@@ -54,7 +54,7 @@ def test_storage_path_mismatch_returns_400(client, mock_job_service) -> None:
     )
 
     response = client.post(
-        "/v1/jobs",
+        "/v1/app/jobs",
         json=valid_job_payload(),
         headers=auth_headers(),
     )
@@ -73,7 +73,7 @@ def test_create_job_rate_limited_returns_429(client) -> None:
     client.app.dependency_overrides[rate_limit_create_job] = raise_rate_limit
 
     response = client.post(
-        "/v1/jobs",
+        "/v1/app/jobs",
         json=valid_job_payload(),
         headers=auth_headers(),
     )

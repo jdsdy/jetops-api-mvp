@@ -13,7 +13,7 @@ class NotamRepository:
     def insert_classified_notams(
         self,
         analysis_job_id: UUID,
-        flight_plan_id: UUID,
+        flight_plan_id: UUID | None,
         notams: list[tuple[RawNotam, ClassificationResult]],
     ) -> list[dict]:
         if not notams:
@@ -22,7 +22,7 @@ class NotamRepository:
         rows = [
             {
                 "analysis_job_id": str(analysis_job_id),
-                "flight_plan_id": str(flight_plan_id),
+                "flight_plan_id": str(flight_plan_id) if flight_plan_id else None,
                 "notam_id": notam.notam_id,
                 "title": notam.title,
                 "topic": classification.topic,

@@ -1,5 +1,5 @@
 from app.schemas.notam_topic import MISC_TOPIC
-from app.services.notam_prompts import (
+from app.services.analysis.notam_prompts import (
     AERODROME_GENERAL,
     AIRSPACE,
     AIRSPACE_ORGANISATION,
@@ -38,6 +38,6 @@ def get_system_prompt(topic: str) -> str:
     if not prompt:
         raise ValueError(
             f"No system prompt configured for NOTAM topic '{topic}'. "
-            f"Add a prompt in app/services/notam_prompts/."
+            f"Add a prompt in app/services/analysis/notam_prompts/."
         )
     return prompt

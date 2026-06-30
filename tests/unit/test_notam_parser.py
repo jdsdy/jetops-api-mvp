@@ -1,4 +1,4 @@
-from app.services.notam_parser import (
+from app.services.extraction.notam_parser import (
     E_JOIN,
     _is_page_break,
     _naips_datetime,

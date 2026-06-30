@@ -6,7 +6,7 @@ See also: [NOTAM analysis](../services/notam-analysis.md) and [Analysis context]
 
 ## Request
 
-`POST /v1/jobs/analysis`
+`POST /v1/app/jobs/analysis`
 
 ### Headers
 

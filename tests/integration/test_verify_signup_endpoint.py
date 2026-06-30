@@ -28,7 +28,7 @@ def signup_client() -> TestClient:
 
 def test_verify_signup_code_returns_200_when_code_matches(signup_client: TestClient) -> None:
     response = signup_client.post(
-        "/v1/signup",
+        "/v1/app/signup",
         json={"code": TEST_SIGNUP_CODE},
     )
 
@@ -39,7 +39,7 @@ def test_verify_signup_code_returns_400_when_code_does_not_match(
     signup_client: TestClient,
 ) -> None:
     response = signup_client.post(
-        "/v1/signup",
+        "/v1/app/signup",
         json={"code": "wrong-code"},
     )
 
@@ -47,6 +47,6 @@ def test_verify_signup_code_returns_400_when_code_does_not_match(
 
 
 def test_verify_signup_code_returns_422_when_code_missing(signup_client: TestClient) -> None:
-    response = signup_client.post("/v1/signup", json={})
+    response = signup_client.post("/v1/app/signup", json={})
 
     assert response.status_code == 422
