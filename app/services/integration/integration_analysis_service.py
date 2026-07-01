@@ -36,14 +36,14 @@ def _parse_timestamp(value: str | None) -> datetime | None:
 def _build_result_summary(
     notams: list[IntegrationAnalysisNotamResult],
 ) -> IntegrationAnalysisResultSummary:
-    priority_1 = sum(1 for notam in notams if notam.category == 1)
-    priority_2 = sum(1 for notam in notams if notam.category == 2)
-    priority_3 = sum(1 for notam in notams if notam.category == 3)
+    category_1 = sum(1 for notam in notams if notam.category == 1)
+    category_2 = sum(1 for notam in notams if notam.category == 2)
+    category_3 = sum(1 for notam in notams if notam.category == 3)
     return IntegrationAnalysisResultSummary(
         total_notams=len(notams),
-        priority_1=priority_1,
-        priority_2=priority_2,
-        priority_3=priority_3,
+        category_1=category_1,
+        category_2=category_2,
+        category_3=category_3,
     )
 
 
@@ -163,8 +163,8 @@ class IntegrationAnalysisService:
 
         jobs: list[IntegrationAnalysisListJobItem] = []
         for row in rows:
-            submitted_at = _parse_timestamp(row.get("started_at"))
-            if submitted_at is None:
+            started_at = _parse_timestamp(row.get("started_at"))
+            if started_at is None:
                 raise ValueError("Integration job missing started_at")
 
             departure_icao = row.get("departure_icao")
@@ -176,7 +176,7 @@ class IntegrationAnalysisService:
             item = IntegrationAnalysisListJobItem(
                 job_id=UUID(str(row["id"])),
                 status=status,
-                submitted_at=submitted_at,
+                started_at=started_at,
                 completed_at=_parse_timestamp(row.get("completed_at")),
                 flight=IntegrationAnalysisListJobFlight(
                     departure_icao=str(departure_icao),

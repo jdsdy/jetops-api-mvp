@@ -111,9 +111,9 @@ class IntegrationAnalysisNotamResult(BaseModel):
 
 class IntegrationAnalysisResultSummary(BaseModel):
     total_notams: int
-    priority_1: int
-    priority_2: int
-    priority_3: int
+    category_1: int
+    category_2: int
+    category_3: int
 
 
 class IntegrationAnalysisResult(BaseModel):
@@ -156,7 +156,7 @@ class IntegrationAnalysisListJobSummary(BaseModel):
 class IntegrationAnalysisListJobItem(BaseModel):
     job_id: UUID
     status: IntegrationAnalysisStatus
-    submitted_at: datetime
+    started_at: datetime
     completed_at: datetime | None = None
     flight: IntegrationAnalysisListJobFlight
     summary: IntegrationAnalysisListJobSummary | None = None

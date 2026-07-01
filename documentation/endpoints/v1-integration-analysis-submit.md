@@ -125,9 +125,9 @@ All poll responses include base fields: `job_id`, `status`, `started_at`.
   "result": {
     "summary": {
       "total_notams": 47,
-      "priority_1": 3,
-      "priority_2": 12,
-      "priority_3": 32
+      "category_1": 3,
+      "category_2": 12,
+      "category_3": 32
     },
     "notams": [
       {
@@ -185,7 +185,7 @@ Returns paginated job summaries for the authenticated API client. Filters are pa
     {
       "job_id": "aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa",
       "status": "complete",
-      "submitted_at": "2025-01-15T10:30:00Z",
+      "started_at": "2025-01-15T10:30:00Z",
       "completed_at": "2025-01-15T10:31:45Z",
       "flight": {
         "departure_icao": "YPPH",
@@ -207,7 +207,7 @@ Returns paginated job summaries for the authenticated API client. Filters are pa
 }
 ```
 
-`submitted_at` maps from `analysis_jobs.started_at`. `summary` is included only for `complete` jobs (from `total_notams`, `cat1_notams`, `cat2_notams`, `cat3_notams` columns).
+`summary` is included only for `complete` jobs (from `total_notams`, `cat1_notams`, `cat2_notams`, `cat3_notams` columns).
 
 ## Related code
 

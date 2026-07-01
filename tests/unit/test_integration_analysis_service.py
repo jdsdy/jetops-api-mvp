@@ -133,8 +133,8 @@ def test_get_job_status_returns_complete_response_with_results() -> None:
     assert response.stage.value == "complete"
     assert response.result is not None
     assert response.result.summary.total_notams == 2
-    assert response.result.summary.priority_1 == 1
-    assert response.result.summary.priority_2 == 1
+    assert response.result.summary.category_1 == 1
+    assert response.result.summary.category_2 == 1
     assert len(response.result.notams) == 2
 
 
