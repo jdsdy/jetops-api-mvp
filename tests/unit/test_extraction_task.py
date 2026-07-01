@@ -8,12 +8,12 @@ from app.repositories.notam_repository import NotamRepository
 from app.schemas.flight import FlightData
 from app.schemas.notam import RawNotam
 from app.schemas.notam_topic import ClassificationResult
-from app.services.extraction_task import (
+from app.services.extraction.extraction_task import (
     _identify_notam_topics,
     _merge_classified_notams,
     run_extraction,
 )
-from app.services.pdf_extractor import PdfExtractionResult
+from app.services.extraction.pdf_extractor import PdfExtractionResult
 from tests.conftest import PLAN_ID
 
 
@@ -24,7 +24,7 @@ def test_identify_notam_topics_classifies_each_notam() -> None:
     ]
 
     with patch(
-        "app.services.extraction_task.classify_notam",
+        "app.services.extraction.extraction_task.classify_notam",
         side_effect=[
             ClassificationResult(topic="RUNWAY", confidence=100),
             ClassificationResult(topic="OBSTACLE", confidence=30),
@@ -75,34 +75,34 @@ def test_run_extraction_success_persists_flight_notams_and_status() -> None:
     mock_stage_repo = MagicMock()
 
     with (
-        patch("app.services.extraction_task.get_supabase_client"),
-        patch("app.services.extraction_task.JobRepository", return_value=mock_job_repo),
+        patch("app.services.extraction.extraction_task.get_supabase_client"),
+        patch("app.services.extraction.extraction_task.JobRepository", return_value=mock_job_repo),
         patch(
-            "app.services.extraction_task.FlightRepository",
+            "app.services.extraction.extraction_task.FlightRepository",
             return_value=mock_flight_repo,
         ),
         patch(
-            "app.services.extraction_task.NotamRepository",
+            "app.services.extraction.extraction_task.NotamRepository",
             return_value=mock_notam_repo,
         ),
         patch(
-            "app.services.pipeline_stage.PipelineStageLogRepository",
+            "app.services.pipeline.pipeline_stage.PipelineStageLogRepository",
             return_value=mock_stage_repo,
         ),
         patch(
-            "app.services.extraction_task.extract_pdf_text",
+            "app.services.extraction.extraction_task.extract_pdf_text",
             return_value=PdfExtractionResult(text="text", page_count=5),
         ),
         patch(
-            "app.services.extraction_task.parse_flight_data",
+            "app.services.extraction.extraction_task.parse_flight_data",
             return_value=flight_data,
         ),
         patch(
-            "app.services.extraction_task.extract_notams",
+            "app.services.extraction.extraction_task.extract_notams",
             return_value=notams,
         ),
         patch(
-            "app.services.extraction_task.classify_notam",
+            "app.services.extraction.extraction_task.classify_notam",
             return_value=classification,
         ),
     ):
@@ -136,18 +136,18 @@ def test_run_extraction_failure_marks_job_failed() -> None:
     mock_stage_repo = MagicMock()
 
     with (
-        patch("app.services.extraction_task.get_supabase_client"),
-        patch("app.services.extraction_task.JobRepository", return_value=mock_job_repo),
+        patch("app.services.extraction.extraction_task.get_supabase_client"),
+        patch("app.services.extraction.extraction_task.JobRepository", return_value=mock_job_repo),
         patch(
-            "app.services.extraction_task.FlightRepository",
+            "app.services.extraction.extraction_task.FlightRepository",
             return_value=mock_flight_repo,
         ),
         patch(
-            "app.services.extraction_task.NotamRepository",
+            "app.services.extraction.extraction_task.NotamRepository",
             return_value=mock_notam_repo,
         ),
         patch(
-            "app.services.pipeline_stage.PipelineStageLogRepository",
+            "app.services.pipeline.pipeline_stage.PipelineStageLogRepository",
             return_value=mock_stage_repo,
         ),
     ):

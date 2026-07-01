@@ -6,6 +6,7 @@ import time
 from collections.abc import Awaitable, Callable, Mapping
 from uuid import UUID
 
+from starlette.background import BackgroundTask, BackgroundTasks
 from starlette.requests import Request
 from starlette.responses import Response
 
@@ -102,6 +103,47 @@ async def _response_with_body(response: Response) -> tuple[Response, bytes]:
     )
 
 
+def _schedule_api_log(
+    response: Response,
+    *,
+    method: str,
+    path: str,
+    status_code: int,
+    duration_ms: int,
+    user_id: UUID | None,
+    organisation_id: UUID | None,
+    api_client_id: UUID | None,
+    error_message: str | None,
+) -> None:
+    log_kwargs = {
+        "method": method,
+        "path": path,
+        "status_code": status_code,
+        "duration_ms": duration_ms,
+        "user_id": user_id,
+        "organisation_id": organisation_id,
+        "api_client_id": api_client_id,
+        "error_message": error_message,
+    }
+
+    if response.background is None:
+        response.background = BackgroundTask(_write_api_log, **log_kwargs)
+        return
+
+    if isinstance(response.background, BackgroundTasks):
+        response.background.add_task(_write_api_log, **log_kwargs)
+        return
+
+    combined = BackgroundTasks()
+    combined.add_task(
+        response.background.func,
+        *response.background.args,
+        **response.background.kwargs,
+    )
+    combined.add_task(_write_api_log, **log_kwargs)
+    response.background = combined
+
+
 def _write_api_log(
     *,
     method: str,
@@ -110,6 +152,7 @@ def _write_api_log(
     duration_ms: int,
     user_id: UUID | None,
     organisation_id: UUID | None,
+    api_client_id: UUID | None,
     error_message: str | None,
 ) -> None:
     try:
@@ -121,6 +164,7 @@ def _write_api_log(
             status_code=status_code,
             user_id=user_id,
             organisation_id=organisation_id,
+            api_client_id=api_client_id,
             duration_ms=duration_ms,
             error_message=error_message,
         )
@@ -150,13 +194,15 @@ async def log_v1_request_middleware(
         response, response_body = await _response_with_body(response)
         error_message = extract_error_message_from_response_body(response_body)
 
-    _write_api_log(
+    _schedule_api_log(
+        response,
         method=request.method,
         path=path,
         status_code=response.status_code,
         duration_ms=duration_ms,
         user_id=getattr(request.state, "user_id", None),
         organisation_id=organisation_id,
+        api_client_id=getattr(request.state, "api_client_id", None),
         error_message=error_message,
     )
     return response

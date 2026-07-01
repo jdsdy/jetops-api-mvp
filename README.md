@@ -17,7 +17,9 @@ fastapi dev
 
 Endpoint reference lives in [`documentation/endpoints/`](documentation/endpoints/):
 
-- [POST /v1/jobs — Create analysis job](documentation/endpoints/v1-jobs-create.md)
+- [POST /v1/app/jobs — Create analysis job](documentation/endpoints/v1-jobs-create.md)
+- [GET /v1/test — Integration API auth probe](documentation/endpoints/v1-integration-test.md)
+- [POST /v1/analysis — Submit integration analysis](documentation/endpoints/v1-integration-analysis-submit.md)
 
 Service docs:
 

@@ -6,7 +6,7 @@ from app.repositories.job_repository import (
 )
 from app.schemas.analysis_context import BeginAnalysisResponse
 from app.schemas.job import BeginAnalysisRequest
-from app.services.analysis_context import build_flight_context
+from app.services.analysis.analysis_context import build_flight_context
 
 
 class AnalysisService:

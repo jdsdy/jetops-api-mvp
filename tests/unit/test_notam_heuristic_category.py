@@ -2,7 +2,7 @@ import pytest
 
 from app.core.config import Settings
 from app.schemas.notam_analysis import AnalysisNotamRow
-from app.services.notam_heuristic_category import (
+from app.services.analysis.notam_heuristic_category import (
     HEURISTIC_CATEGORY_3_TOPICS,
     heuristic_category,
     is_heuristic_category_candidate,

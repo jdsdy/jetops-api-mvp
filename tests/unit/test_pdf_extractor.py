@@ -1,4 +1,4 @@
-from app.services.pdf_extractor import extract_pdf_text
+from app.services.extraction.pdf_extractor import extract_pdf_text
 from tests.paths import EXAMPLE_PLANS_DIR
 
 YSSY_YPPH_PDF = EXAMPLE_PLANS_DIR / "Briefing: YSSY - YPPH (created Apr 14 01:22:14Z).pdf"

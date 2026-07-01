@@ -2,7 +2,7 @@ from uuid import UUID
 
 import pytest
 
-from app.services.storage_path import validate_storage_path
+from app.services.jobs.storage_path import validate_storage_path
 from tests.conftest import FLIGHT_ID, ORG_ID, PLAN_ID, STORAGE_PATH
 
 

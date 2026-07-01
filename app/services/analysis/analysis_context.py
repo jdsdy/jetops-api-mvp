@@ -10,6 +10,11 @@ from app.schemas.analysis_context import (
     AnalysisNotam,
     FlightContext,
 )
+from app.schemas.integration_analysis import (
+    IntegrationAircraftRequest,
+    IntegrationAirfieldRequest,
+    IntegrationFlightRequest,
+)
 from app.schemas.notam_analysis import AnalysisNotamRow
 
 # ---------------------------------------------------------------------------
@@ -208,4 +213,50 @@ def build_analysis_context(
     return AnalysisContext(
         flight=_flight_context_from_bundle(bundle, repository),
         notams=_build_notams(repository.fetch_notams(job_id)),
+    )
+
+
+def _airfield_from_integration(airfield: IntegrationAirfieldRequest) -> AirfieldContext:
+    return AirfieldContext(
+        icao=airfield.icao,
+        rwy=airfield.rwy,
+        iso_country=airfield.iso_country,
+        length_ft=airfield.length_ft,
+        length_m=airfield.length_m,
+        width_ft=airfield.width_ft,
+        width_m=airfield.width_m,
+        surface_type=airfield.surface_type,
+        lighted=airfield.lighted,
+    )
+
+
+def _aircraft_from_integration(aircraft: IntegrationAircraftRequest) -> AircraftContext:
+    return AircraftContext(
+        make=aircraft.make,
+        model=aircraft.model,
+        seats=aircraft.seats,
+        rnav_equipped=aircraft.rnav_equipped,
+        icao_wtc=aircraft.icao_wtc,
+        weight_class=aircraft.weight_class,
+        wingspan_ft=aircraft.wingspan_ft,
+        wingspan_m=aircraft.wingspan_m,
+        length_ft=aircraft.length_ft,
+        length_m=aircraft.length_m,
+        instrument_approach_category=aircraft.instrument_approach_category,
+        aircraft_design_group=aircraft.aircraft_design_group,
+    )
+
+
+def build_flight_context_from_integration(
+    flight: IntegrationFlightRequest,
+) -> FlightContext:
+    return FlightContext(
+        departure_airfield=_airfield_from_integration(flight.departure_airfield),
+        arrival_airfield=_airfield_from_integration(flight.arrival_airfield),
+        alternate_airfield_icao=flight.alternate_airfield_icao,
+        planned_dept_time=flight.planned_dept_time,
+        planned_arr_time=flight.planned_arr_time,
+        route=flight.route,
+        cruise_level=flight.cruise_level,
+        aircraft=_aircraft_from_integration(flight.aircraft),
     )

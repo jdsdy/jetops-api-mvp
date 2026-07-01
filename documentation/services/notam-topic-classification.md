@@ -87,15 +87,15 @@ Condensed / NAIPS paths without a Q line still combine E-line + title text again
 
 ## Specialist analysis prompts
 
-The general (MISC) system prompt lives in [`app/services/notam_prompts/generic.py`](../../app/services/notam_prompts/generic.py) as `GENERIC`. Specialist topic prompts live alongside it under `app/services/notam_prompts/` and are registered in [`app/services/notam_topic_prompts.py`](../../app/services/notam_topic_prompts.py).
+The general (MISC) system prompt lives in [`app/services/analysis/notam_prompts/generic.py`](../../app/services/analysis/notam_prompts/generic.py) as `GENERIC`. Specialist topic prompts live alongside it under `app/services/analysis/notam_prompts/` and are registered in [`app/services/analysis/notam_topic_prompts.py`](../../app/services/analysis/notam_topic_prompts.py).
 
 ## Module layout
 
 | Module | Role |
 |---|---|
-| [`app/services/notam_topic_classifier.py`](../../app/services/notam_topic_classifier.py) | Q-code, E-line, and ForeFlight triple vote |
+| [`app/services/extraction/notam_topic_classifier.py`](../../app/services/extraction/notam_topic_classifier.py) | Q-code, E-line, and ForeFlight triple vote |
 | [`app/repositories/notam_repository.py`](../../app/repositories/notam_repository.py) | Bulk insert classified NOTAM rows |
-| [`app/services/extraction_task.py`](../../app/services/extraction_task.py) | `notam_topic_classification` pipeline stage |
+| [`app/services/extraction/extraction_task.py`](../../app/services/extraction/extraction_task.py) | `notam_topic_classification` pipeline stage |
 
 ## Pipeline stage log
 

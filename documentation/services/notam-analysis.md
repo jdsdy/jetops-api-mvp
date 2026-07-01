@@ -6,7 +6,7 @@ See also: [Begin analysis](../endpoints/v1-jobs-begin-analysis.md), [Analysis co
 
 ## Flow
 
-1. **Sync** (`POST /v1/jobs/analysis`): validate job, build flight context (no NOTAMs), set `processing_analysis`, return `{ "response_begun": true }`.
+1. **Sync** (`POST /v1/app/jobs/analysis`): validate job, build flight context (no NOTAMs), set `processing_analysis`, return `{ "response_begun": true }`.
 2. **Background** (`run_analysis_task`):
    - Build flight context and fetch `raw_notams` (including `topic` and `topic_confidence`)
    - Partition NOTAMs into heuristic category candidates vs agent categorization candidates
@@ -41,13 +41,13 @@ flowchart TD
 
 | Module | Role |
 |---|---|
-| [`app/services/analysis_service.py`](../../app/services/analysis_service.py) | Sync validation and status transition |
-| [`app/services/analysis_task.py`](../../app/services/analysis_task.py) | Background pipeline orchestration and per-leg retry |
-| [`app/services/notam_analyzer.py`](../../app/services/notam_analyzer.py) | Partitioning, batching, dual agents, merge |
-| [`app/services/notam_heuristic_category.py`](../../app/services/notam_heuristic_category.py) | Analysis-time category-3 eligibility |
-| [`app/services/notam_topic_prompts.py`](../../app/services/notam_topic_prompts.py) | Topic → categorization system prompt registry |
-| [`app/services/notam_prompts/summary.py`](../../app/services/notam_prompts/summary.py) | Haiku summarization system prompt |
-| [`app/services/notam_prompts/`](../../app/services/notam_prompts/) | Per-topic categorization system prompt content |
+| [`app/services/analysis/analysis_service.py`](../../app/services/analysis/analysis_service.py) | Sync validation and status transition |
+| [`app/services/analysis/analysis_task.py`](../../app/services/analysis/analysis_task.py) | Background pipeline orchestration and per-leg retry |
+| [`app/services/analysis/notam_analyzer.py`](../../app/services/analysis/notam_analyzer.py) | Partitioning, batching, dual agents, merge |
+| [`app/services/analysis/notam_heuristic_category.py`](../../app/services/analysis/notam_heuristic_category.py) | Analysis-time category-3 eligibility |
+| [`app/services/analysis/notam_topic_prompts.py`](../../app/services/analysis/notam_topic_prompts.py) | Topic → categorization system prompt registry |
+| [`app/services/analysis/notam_prompts/summary.py`](../../app/services/analysis/notam_prompts/summary.py) | Haiku summarization system prompt |
+| [`app/services/analysis/notam_prompts/`](../../app/services/analysis/notam_prompts/) | Per-topic categorization system prompt content |
 | [`app/repositories/analysed_notam_repository.py`](../../app/repositories/analysed_notam_repository.py) | Bulk insert/update into `analysed_notams` |
 
 ## Categorization leg (Sonnet)

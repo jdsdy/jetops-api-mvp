@@ -2,7 +2,7 @@
 
 Rule-based extraction of individual NOTAMs from ForeFlight, NAIPS, and OzRunways briefing PDFs. Each NOTAM is parsed into the ICAO field structure and written to `raw_notams`.
 
-See also: [Flight data extraction](flight-extraction.md) and [POST /v1/jobs](../endpoints/v1-jobs-create.md) — NOTAM extraction runs in the same background task, after flight data is persisted.
+See also: [Flight data extraction](flight-extraction.md) and [POST /v1/app/jobs](../endpoints/v1-jobs-create.md) — NOTAM extraction runs in the same background task, after flight data is persisted.
 
 ## Extracted fields
 
@@ -48,7 +48,7 @@ After `notam_parse` extracts NOTAMs in memory, the `notam_topic_classification` 
 
 | Module | Role |
 |---|---|
-| [`app/services/notam_parser.py`](../../app/services/notam_parser.py) | Shared helpers, ForeFlight + NAIPS + OzRunways NOTAM parsers, `extract_notams` |
+| [`app/services/extraction/notam_parser.py`](../../app/services/extraction/notam_parser.py) | Shared helpers, ForeFlight + NAIPS + OzRunways NOTAM parsers, `extract_notams` |
 | [`app/repositories/notam_repository.py`](../../app/repositories/notam_repository.py) | Bulk insert into `raw_notams`; update topic classification |
 
 ## Tests

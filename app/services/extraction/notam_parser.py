@@ -1,7 +1,7 @@
 import re
 
 from app.schemas.notam import RawNotam
-from app.services.flight_parser import detect_plan_format, ozrunways_document_year
+from app.services.extraction.flight_parser import detect_plan_format, ozrunways_document_year
 
 # ---------------------------------------------------------------------------
 # Shared helpers

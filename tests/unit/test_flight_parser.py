@@ -2,7 +2,7 @@ from datetime import UTC, datetime
 
 import pytest
 
-from app.services.flight_parser import (
+from app.services.extraction.flight_parser import (
     _ozrunways_etd_info,
     detect_plan_format,
     parse_flight_data,

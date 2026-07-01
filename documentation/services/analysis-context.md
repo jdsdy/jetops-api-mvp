@@ -32,8 +32,8 @@ When `fleet_aircraft.aircraft_ref_id` is null, aircraft `make` / `model` come fr
 |---|---|
 | [`app/schemas/analysis_context.py`](../../app/schemas/analysis_context.py) | Pydantic models |
 | [`app/repositories/analysis_context_repository.py`](../../app/repositories/analysis_context_repository.py) | Supabase queries (job bundle join, airports, NOTAMs) |
-| [`app/services/analysis_context.py`](../../app/services/analysis_context.py) | Mapping + `build_analysis_context(job_id)` |
-| [`app/services/analysis_service.py`](../../app/services/analysis_service.py) | Status transition + returns `flight` only to API |
+| [`app/services/analysis/analysis_context.py`](../../app/services/analysis/analysis_context.py) | Mapping + `build_analysis_context(job_id)` |
+| [`app/services/analysis/analysis_service.py`](../../app/services/analysis/analysis_service.py) | Status transition + returns `flight` only to API |
 
 ## Tests
 

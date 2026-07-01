@@ -25,7 +25,7 @@ Eligible NOTAMs receive **category 3** without a Sonnet categorization call. The
 
 | Module | Role |
 |---|---|
-| [`app/services/notam_heuristic_category.py`](../../app/services/notam_heuristic_category.py) | Eligibility check and category assignment |
+| [`app/services/analysis/notam_heuristic_category.py`](../../app/services/analysis/notam_heuristic_category.py) | Eligibility check and category assignment |
 | [`app/schemas/notam_analysis.py`](../../app/schemas/notam_analysis.py) | `topic_confidence` on `AnalysisNotamRow` |
 | [`app/repositories/analysis_context_repository.py`](../../app/repositories/analysis_context_repository.py) | Fetches `topic_confidence` with NOTAM rows |
 

@@ -13,11 +13,11 @@ from app.schemas.pipeline_stage import (
     build_notam_parse_metadata,
     build_notam_topic_classification_metadata,
 )
-from app.services.flight_parser import parse_flight_data
-from app.services.notam_parser import extract_notams
-from app.services.notam_topic_classifier import classify_notam
-from app.services.pdf_extractor import extract_pdf_text
-from app.services.pipeline_stage import PipelineStageLogger
+from app.services.extraction.flight_parser import parse_flight_data
+from app.services.extraction.notam_parser import extract_notams
+from app.services.extraction.notam_topic_classifier import classify_notam
+from app.services.extraction.pdf_extractor import extract_pdf_text
+from app.services.pipeline.pipeline_stage import PipelineStageLogger
 
 
 def _identify_notam_topics(

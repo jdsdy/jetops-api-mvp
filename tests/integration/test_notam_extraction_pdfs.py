@@ -4,8 +4,8 @@ import re
 import pytest
 
 from app.schemas.notam import RawNotam
-from app.services.notam_parser import extract_notams
-from app.services.pdf_extractor import extract_pdf_text
+from app.services.extraction.notam_parser import extract_notams
+from app.services.extraction.pdf_extractor import extract_pdf_text
 from tests.paths import EXAMPLE_PLANS_DIR, NOTAM_FIXTURES
 
 FIELDS = ("title", "q", "a", "b", "c", "d", "e", "f", "g")

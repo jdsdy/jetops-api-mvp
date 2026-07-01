@@ -56,7 +56,8 @@
         "moderate": [
             "BIRDS",
             "SERVICE NOT AVAILABLE",
-            "SERVICE LIMITED"
+            "SERVICE LIMITED",
+            "AIRPORT"
         ],
         "exact": [
             "AERODROME"

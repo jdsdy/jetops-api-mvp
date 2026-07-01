@@ -1,7 +1,7 @@
 import pytest
 
 from app.core.config import Settings
-from app.services.notam_categorize_agent import (
+from app.services.analysis.notam_categorize_agent import (
     HAIKU_CATEGORIZE_TOPICS,
     NO_THINKING_CATEGORIZE_TOPICS,
     get_categorize_agent_config,

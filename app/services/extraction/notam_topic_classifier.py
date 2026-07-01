@@ -9,7 +9,7 @@ from app.schemas.notam_topic import MISC_TOPIC, ClassificationResult
 
 Q_CODE_MATCH_CONFIDENCE = 100
 
-_SCHEMAS_DIR = Path(__file__).resolve().parent.parent / "schemas"
+_SCHEMAS_DIR = Path(__file__).resolve().parent.parent.parent / "schemas"
 _IDENTIFIER_CODES_PATH = _SCHEMAS_DIR / "notam_identifier_codes.json"
 _TYPE_SIGNALS_PATH = _SCHEMAS_DIR / "notam_type_signals.json"
 _TITLE_SIGNALS_PATH = _SCHEMAS_DIR / "notam_title_signals.json"

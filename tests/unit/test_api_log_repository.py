@@ -17,10 +17,11 @@ def test_insert_api_log_writes_expected_payload() -> None:
     repository.insert_api_log(
         service="fastapi",
         method="POST",
-        path="/v1/jobs",
+        path="/v1/app/jobs",
         status_code=201,
         user_id=user_id,
         organisation_id=organisation_id,
+        api_client_id=None,
         duration_ms=42,
         error_message=None,
     )
@@ -29,11 +30,48 @@ def test_insert_api_log_writes_expected_payload() -> None:
         {
             "service": "fastapi",
             "method": "POST",
-            "path": "/v1/jobs",
+            "path": "/v1/app/jobs",
             "status_code": 201,
             "user_id": str(user_id),
             "organisation_id": str(organisation_id),
+            "api_client_id": None,
             "duration_ms": 42,
+            "error_message": None,
+        }
+    )
+
+
+def test_insert_api_log_writes_api_client_id() -> None:
+    api_client_id = uuid4()
+    mock_client = MagicMock()
+    mock_table = MagicMock()
+    mock_client.table.return_value = mock_table
+    mock_table.insert.return_value = mock_table
+    mock_table.execute.return_value = MagicMock()
+
+    repository = ApiLogRepository(mock_client)
+    repository.insert_api_log(
+        service="fastapi",
+        method="GET",
+        path="/v1/test",
+        status_code=200,
+        user_id=None,
+        organisation_id=None,
+        api_client_id=api_client_id,
+        duration_ms=5,
+        error_message=None,
+    )
+
+    mock_table.insert.assert_called_once_with(
+        {
+            "service": "fastapi",
+            "method": "GET",
+            "path": "/v1/test",
+            "status_code": 200,
+            "user_id": None,
+            "organisation_id": None,
+            "api_client_id": str(api_client_id),
+            "duration_ms": 5,
             "error_message": None,
         }
     )
@@ -50,10 +88,11 @@ def test_insert_api_log_omits_null_user_and_organisation_ids() -> None:
     repository.insert_api_log(
         service="fastapi",
         method="POST",
-        path="/v1/signup",
+        path="/v1/app/signup",
         status_code=200,
         user_id=None,
         organisation_id=None,
+        api_client_id=None,
         duration_ms=10,
         error_message=None,
     )
@@ -62,10 +101,11 @@ def test_insert_api_log_omits_null_user_and_organisation_ids() -> None:
         {
             "service": "fastapi",
             "method": "POST",
-            "path": "/v1/signup",
+            "path": "/v1/app/signup",
             "status_code": 200,
             "user_id": None,
             "organisation_id": None,
+            "api_client_id": None,
             "duration_ms": 10,
             "error_message": None,
         }

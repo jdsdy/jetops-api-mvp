@@ -10,7 +10,7 @@ from app.repositories.job_repository import (
     JobRepository,
 )
 from app.schemas.job import BeginAnalysisRequest
-from app.services.analysis_service import AnalysisService
+from app.services.analysis.analysis_service import AnalysisService
 from tests.conftest import FLIGHT_ID, ORG_ID, PLAN_ID
 
 
@@ -37,7 +37,7 @@ def test_begin_analysis_updates_status_and_returns_response_begun() -> None:
     mock_context_repo = MagicMock(spec=AnalysisContextRepository)
 
     with patch(
-        "app.services.analysis_service.build_flight_context",
+        "app.services.analysis.analysis_service.build_flight_context",
     ) as mock_build:
         service = AnalysisService(mock_job_repo, mock_context_repo)
         result = service.begin_analysis(request)

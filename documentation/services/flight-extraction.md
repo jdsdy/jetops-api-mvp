@@ -2,7 +2,7 @@
 
 Rule-based extraction of flight plan fields from ForeFlight, NAIPS, and OzRunways briefing PDFs.
 
-See also: [POST /v1/jobs](../endpoints/v1-jobs-create.md) for how extraction is triggered after job creation.
+See also: [POST /v1/app/jobs](../endpoints/v1-jobs-create.md) for how extraction is triggered after job creation.
 
 ## Extracted fields
 
@@ -34,10 +34,10 @@ Both layouts share the header line: `ABCD — EFGH (Mon DD, YYYY) in …`.
 
 | Module | Role |
 |---|---|
-| [`app/services/pdf_extractor.py`](../../app/services/pdf_extractor.py) | pdfplumber text extraction (incl. two-column landscape pages) |
-| [`app/services/flight_parser.py`](../../app/services/flight_parser.py) | Format detection, shared helpers, ForeFlight + NAIPS + OzRunways parsers, `parse_flight_data` |
-| [`app/services/extraction_task.py`](../../app/services/extraction_task.py) | Background task: download → parse → persist → `awaiting_confirmation` |
-| [`app/services/pipeline_stage.py`](../../app/services/pipeline_stage.py) | Timed stage logs to `pipeline_stage_logs` |
+| [`app/services/extraction/pdf_extractor.py`](../../app/services/extraction/pdf_extractor.py) | pdfplumber text extraction (incl. two-column landscape pages) |
+| [`app/services/extraction/flight_parser.py`](../../app/services/extraction/flight_parser.py) | Format detection, shared helpers, ForeFlight + NAIPS + OzRunways parsers, `parse_flight_data` |
+| [`app/services/extraction/extraction_task.py`](../../app/services/extraction/extraction_task.py) | Background task: download → parse → persist → `awaiting_confirmation` |
+| [`app/services/pipeline/pipeline_stage.py`](../../app/services/pipeline/pipeline_stage.py) | Timed stage logs to `pipeline_stage_logs` |
 
 ## Pipeline stage logs
 
@@ -56,7 +56,7 @@ Stages that complete before an error are logged; stages not reached are omitted.
 | Outcome | `analysis_jobs.status` |
 |---|---|
 | Extraction + DB write succeed | `awaiting_confirmation` |
-| Analysis start (`POST /v1/jobs/analysis`, sync) | `processing_analysis` |
+| Analysis start (`POST /v1/app/jobs/analysis`, sync) | `processing_analysis` |
 | NOTAM analysis completes | `finished` |
 | Any extraction/persistence error | `failed` (+ `error_message`) |
 

@@ -92,3 +92,47 @@ def test_mark_analysed_notams_errored_sets_did_error_true() -> None:
     assert eq_calls[1].args == ("notam_id", 2)
     assert eq_calls[2].args == ("anaysis_job_id", str(job_id))
     assert eq_calls[3].args == ("notam_id", 3)
+
+
+def test_insert_analysed_notams_allows_null_flight_plan_id() -> None:
+    job_id = uuid4()
+    mock_client = MagicMock()
+    mock_table = MagicMock()
+    mock_client.table.return_value = mock_table
+    mock_table.insert.return_value = mock_table
+    mock_table.execute.return_value = MagicMock()
+
+    repository = AnalysedNotamRepository(mock_client)
+    repository.insert_analysed_notams(
+        job_id,
+        None,
+        [(1, NotamResult(notam_id="C0481/26 NOTAMN", category=1, summary="Done"))],
+    )
+
+    payload = mock_table.insert.call_args.args[0]
+    assert payload[0]["flight_plan_id"] is None
+
+
+def test_fetch_integration_results_returns_joined_notam_ids() -> None:
+    job_id = uuid4()
+    mock_client = MagicMock()
+    mock_table = MagicMock()
+    mock_client.table.return_value = mock_table
+    mock_table.select.return_value = mock_table
+    mock_table.eq.return_value = mock_table
+    mock_table.execute.return_value = MagicMock(
+        data=[
+            {
+                "category": 1,
+                "summary": "Runway closed",
+                "raw_notams": {"notam_id": "A1234/25"},
+            }
+        ]
+    )
+
+    repository = AnalysedNotamRepository(mock_client)
+    rows = repository.fetch_integration_results(job_id)
+
+    assert rows == [
+        {"notam_id": "A1234/25", "category": 1, "summary": "Runway closed"}
+    ]

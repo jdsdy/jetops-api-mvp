@@ -3,7 +3,7 @@ import time
 from functools import lru_cache
 from typing import Annotated
 
-from fastapi import Depends, HTTPException, status
+from fastapi import Depends, HTTPException, Request, status
 from upstash_ratelimit import FixedWindow, Ratelimit
 from upstash_redis import Redis
 
@@ -27,7 +27,7 @@ def get_create_job_ratelimit() -> Ratelimit:
     return Ratelimit(
         redis=get_redis(),
         limiter=FixedWindow(max_requests=1, window=10),
-        prefix="@upstash/ratelimit/jetops/post/v1/jobs",
+        prefix="@upstash/ratelimit/jetops/post/v1/app/jobs",
     )
 
 
@@ -36,7 +36,16 @@ def get_begin_analysis_ratelimit() -> Ratelimit:
     return Ratelimit(
         redis=get_redis(),
         limiter=FixedWindow(max_requests=1, window=120),
-        prefix="@upstash/ratelimit/jetops/post/v1/jobs/analysis",
+        prefix="@upstash/ratelimit/jetops/post/v1/app/jobs/analysis",
+    )
+
+
+@lru_cache
+def get_integration_poll_ratelimit() -> Ratelimit:
+    return Ratelimit(
+        redis=get_redis(),
+        limiter=FixedWindow(max_requests=10, window=1),
+        prefix="@upstash/ratelimit/jetops/get/v1/analysis",
     )
 
 
@@ -68,3 +77,16 @@ def rate_limit_begin_analysis(
     ratelimit: Annotated[Ratelimit, Depends(get_begin_analysis_ratelimit)],
 ) -> None:
     _enforce_ratelimit(ratelimit, user.id)
+
+
+def rate_limit_integration_poll(
+    request: Request,
+    ratelimit: Annotated[Ratelimit, Depends(get_integration_poll_ratelimit)],
+) -> None:
+    key_hash = getattr(request.state, "api_key_hash", None)
+    if key_hash is None:
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Unauthorized",
+        )
+    _enforce_ratelimit(ratelimit, key_hash)

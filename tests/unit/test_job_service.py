@@ -7,7 +7,7 @@ from storage3.exceptions import StorageApiError
 from app.core.errors import JobStepError
 from app.repositories.job_repository import JobRepository
 from app.schemas.job import CreateJobRequest
-from app.services.job_service import JobService
+from app.services.jobs.job_service import JobService
 from tests.conftest import (
     FLIGHT_ID,
     ORG_ID,

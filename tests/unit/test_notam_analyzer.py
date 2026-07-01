@@ -15,7 +15,7 @@ from app.schemas.notam_analysis import (
     SummaryBatchResult,
     SummaryResult,
 )
-from app.services.notam_analyzer import (
+from app.services.analysis.notam_analyzer import (
     GENERAL_ANALYSIS_OUTPUT_JSON_SCHEMA,
     SPECIALIST_ANALYSIS_OUTPUT_JSON_SCHEMA,
     SUMMARY_OUTPUT_JSON_SCHEMA,
@@ -35,7 +35,7 @@ from app.services.notam_analyzer import (
     merge_batch_results,
     summarize_notam_batches,
 )
-from app.services.notam_topic_prompts import GENERIC
+from app.services.analysis.notam_topic_prompts import GENERIC
 
 
 def _flight_context() -> FlightContext:
@@ -174,7 +174,7 @@ def test_analyze_notam_batches_aggregates_tokens_and_detects_limit() -> None:
         )
 
     with patch(
-        "app.services.notam_analyzer._categorize_batch",
+        "app.services.analysis.notam_analyzer._categorize_batch",
         side_effect=fake_analyze,
     ):
         result = analyze_notam_batches(
@@ -262,9 +262,9 @@ def test_analyze_notam_batches_collects_rejected_notam_ids() -> None:
         )
 
     with (
-        patch("app.services.notam_analyzer._categorize_batch", side_effect=fake_analyze),
+        patch("app.services.analysis.notam_analyzer._categorize_batch", side_effect=fake_analyze),
         patch(
-            "app.services.notam_analyzer.get_system_prompt",
+            "app.services.analysis.notam_analyzer.get_system_prompt",
             return_value="specialist prompt",
         ),
     ):
@@ -604,7 +604,7 @@ def test_analyze_notam_batches_collects_missing_from_failed_batches() -> None:
             set(),
         )
 
-    with patch("app.services.notam_analyzer._categorize_batch", side_effect=fake_analyze):
+    with patch("app.services.analysis.notam_analyzer._categorize_batch", side_effect=fake_analyze):
         result = analyze_notam_batches([batch], settings=settings)
 
     assert result.missing_notam_ids == ["C0478/26 NOTAMN"]
@@ -650,7 +650,7 @@ def test_merge_batch_results_combines_stats_and_keeps_final_missing() -> None:
 
 
 def test_summarize_batch_uses_haiku_and_summary_schema() -> None:
-    from app.services.notam_prompts.summary import SUMMARY
+    from app.services.analysis.notam_prompts.summary import SUMMARY
 
     batch = chunk_summary_batches(
         [_notam_row(1, "C0481/26 NOTAMN")],
@@ -712,7 +712,7 @@ def test_analyze_notam_job_skips_categorization_for_heuristic_rows() -> None:
 
     with (
         patch(
-            "app.services.notam_analyzer.categorize_notam_batches",
+            "app.services.analysis.notam_analyzer.categorize_notam_batches",
             return_value=CategoryBatchResult(
                 results=[CategoryResult(notam_id="C0478/26 NOTAMN", category=2)],
                 batch_stats=[],
@@ -721,7 +721,7 @@ def test_analyze_notam_job_skips_categorization_for_heuristic_rows() -> None:
             ),
         ) as mock_categorize,
         patch(
-            "app.services.notam_analyzer.summarize_notam_batches",
+            "app.services.analysis.notam_analyzer.summarize_notam_batches",
             return_value=SummaryBatchResult(
                 results=[
                     SummaryResult(notam_id="C0481/26 NOTAMN", summary="Obstacle lit."),

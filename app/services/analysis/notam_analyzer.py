@@ -23,13 +23,13 @@ from app.schemas.notam_analysis import (
     SummaryOutput,
     SummaryResult,
 )
-from app.services.notam_heuristic_category import (
+from app.services.analysis.notam_heuristic_category import (
     heuristic_category,
     is_heuristic_category_candidate,
 )
-from app.services.notam_categorize_agent import get_categorize_agent_config
-from app.services.notam_prompts.summary import SUMMARY
-from app.services.notam_topic_prompts import get_system_prompt
+from app.services.analysis.notam_categorize_agent import get_categorize_agent_config
+from app.services.analysis.notam_prompts.summary import SUMMARY
+from app.services.analysis.notam_topic_prompts import get_system_prompt
 
 # ---------------------------------------------------------------------------
 # Batching

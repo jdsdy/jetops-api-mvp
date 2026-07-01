@@ -6,7 +6,7 @@ import pytest
 
 from app.repositories.analysis_context_repository import AnalysisContextRepository
 from app.schemas.analysis_context import AnalysisContext
-from app.services.analysis_context import (
+from app.services.analysis.analysis_context import (
     _build_aircraft,
     _build_airfield,
     _match_runway,
